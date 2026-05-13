@@ -1,0 +1,122 @@
+export const MOCK_PRODUCTS = [
+  {
+    _id: '1',
+    name: 'Wireless Noise Cancelling Headphones',
+    description: 'High-quality wireless headphones with active noise cancellation and 30-hour battery life.',
+    price: 299.99,
+    category: 'Electronics',
+    stock: 25,
+    rating: 4.8,
+    numReviews: 120,
+    images: ['https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=1000&auto=format&fit=crop'],
+    isFeatured: true
+  },
+  {
+    _id: '2',
+    name: 'Cotton Graphic T-Shirt',
+    description: 'Comfortable 100% cotton t-shirt with a modern graphic design.',
+    price: 24.99,
+    category: 'Clothing',
+    stock: 50,
+    rating: 4.5,
+    numReviews: 85,
+    images: ['https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=1000&auto=format&fit=crop'],
+    isFeatured: false
+  },
+  {
+    _id: '3',
+    name: 'The Great Adventure Novel',
+    description: 'An epic tale of discovery and courage in a mystical land.',
+    price: 14.99,
+    category: 'Books',
+    stock: 100,
+    rating: 4.9,
+    numReviews: 210,
+    images: ['https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=1000&auto=format&fit=crop'],
+    isFeatured: true
+  },
+  {
+    _id: '4',
+    name: 'Smart Home Hub',
+    description: 'Control your entire home with this intuitive smart hub featuring voice assistant integration.',
+    price: 129.99,
+    category: 'Electronics',
+    stock: 15,
+    rating: 4.2,
+    numReviews: 45,
+    images: ['https://images.unsplash.com/photo-1589492477829-5e65395b66cc?q=80&w=1000&auto=format&fit=crop'],
+    isFeatured: false
+  },
+  {
+    _id: '5',
+    name: 'Ergonomic Office Chair',
+    description: 'Breathable mesh back and lumbar support for all-day comfort while working.',
+    price: 199.99,
+    category: 'Home',
+    stock: 10,
+    rating: 4.7,
+    numReviews: 60,
+    images: ['https://images.unsplash.com/photo-1505797149-43b0069ec26b?q=80&w=1000&auto=format&fit=crop'],
+    isFeatured: true
+  },
+  {
+    _id: '6',
+    name: 'Yoga Mat',
+    description: 'Non-slip eco-friendly yoga mat for all types of fitness and stretching.',
+    price: 35.00,
+    category: 'Sports',
+    stock: 40,
+    rating: 4.6,
+    numReviews: 95,
+    images: ['https://images.unsplash.com/photo-1592419044706-39796d40f98c?q=80&w=1000&auto=format&fit=crop'],
+    isFeatured: false
+  },
+  {
+    _id: '7',
+    name: 'Mechanical Gaming Keyboard',
+    description: 'RGB backlit mechanical keyboard with tactile switches for precision gaming.',
+    price: 89.99,
+    category: 'Electronics',
+    stock: 30,
+    rating: 4.4,
+    numReviews: 75,
+    images: ['https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?q=80&w=1000&auto=format&fit=crop'],
+    isFeatured: false
+  },
+  {
+    _id: '8',
+    name: 'Stainless Steel Water Bottle',
+    description: 'Insulated water bottle that keeps drinks cold for 24 hours or hot for 12 hours.',
+    price: 19.99,
+    category: 'Other',
+    stock: 150,
+    rating: 4.9,
+    numReviews: 320,
+    images: ['https://images.unsplash.com/photo-1602143307185-8a40502e6396?q=80&w=1000&auto=format&fit=crop'],
+    isFeatured: true
+  },
+  {
+    _id: '9',
+    name: 'Running Shoes',
+    description: 'Lightweight and breathable running shoes with superior cushioning.',
+    price: 75.00,
+    category: 'Sports',
+    stock: 20,
+    rating: 4.3,
+    numReviews: 55,
+    images: ['https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=1000&auto=format&fit=crop'],
+    isFeatured: false
+  },
+  {
+    _id: '10',
+    name: 'Succulent Plant Set',
+    description: 'A set of 4 different mini succulents in decorative ceramic pots.',
+    price: 29.99,
+    category: 'Home',
+    stock: 25,
+    rating: 4.8,
+    numReviews: 110,
+    images: ['https://images.unsplash.com/photo-1520302630591-fd1c66ed11ef?q=80&w=1000&auto=format&fit=crop'],
+    isFeatured: false
+  }
+];

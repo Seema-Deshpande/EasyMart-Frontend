@@ -1,0 +1,44 @@
+.product-list-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.product-list-header {
+  margin-bottom: 20px;
+}
+
+.product-list-header h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: #333;
+}
+
+.product-count {
+  color: #6c757d;
+  margin-top: 5px;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 25px;
+  margin-top: 20px;
+}
+
+.no-products-message {
+  text-align: center;
+  padding: 50px 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.no-products-message h3 {
+  color: #343a40;
+  margin-bottom: 10px;
+}
+
+.no-products-message p {
+  color: #6c757d;
+}
