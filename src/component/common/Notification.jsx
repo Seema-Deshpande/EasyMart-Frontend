@@ -3,23 +3,28 @@ import './Notification.css';
 
 const Notification = ({ message, type = 'info', onClose }) => {
   useEffect(() => {
-    const timer = setTimeout(() => {
+    if (!message) return;
+    
+    const id = setTimeout(() => {
       if (onClose) {
         onClose();
       }
     }, 3000);
 
-    return () => clearTimeout(timer);
-  }, [onClose]);
+    return () => clearTimeout(id); // cancel if message changes before 3s
+  }, [message, onClose]);
 
   if (!message) return null;
 
+  const alertClass = type === 'error' || type === 'danger' ? 'alert-danger' : 'alert-success';
+
   return (
-    <div className={`notification-banner ${type}`}>
-      <span className="notification-message">{message}</span>
-      <button className="notification-close" onClick={onClose} aria-label="Close notification">
-        &times;
-      </button>
+    <div 
+      className={`alert ${alertClass} alert-dismissible fade show shadow-sm m-3`} 
+      role="alert"
+    >
+      {message}
+      <button type="button" className="btn-close" onClick={onClose} aria-label="Close notification"></button>
     </div>
   );
 };

@@ -27,6 +27,9 @@ function App() {
   // Notification State
   const [notification, setNotification] = useState(null);
 
+  // Loading State
+  const [isLoading, setIsLoading] = useState(true);
+
   // Filter State
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
@@ -76,6 +79,12 @@ function App() {
 
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // Simulation of Initial Loading
+  useEffect(() => {
+    const id = setTimeout(() => setIsLoading(false), 800);
+    return () => clearTimeout(id);
   }, []);
 
   // Utility: Show Notification
@@ -203,7 +212,7 @@ function App() {
           />
         );
       case 'home':
-      default:
+      default: {
         const featured = MOCK_PRODUCTS.filter(p => p.isFeatured).slice(0, 3);
         const homeProducts = featured.length > 0 ? featured : MOCK_PRODUCTS.slice(0, 3);
         return (
@@ -213,16 +222,28 @@ function App() {
             onShopNow={() => navigate('products')}
           />
         );
+      }
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="App">
+    <div className="App d-flex flex-column min-vh-100">
       <Navbar 
         isLoggedIn={isLoggedIn} 
         user={user} 
         onLogout={handleLogout}
         onNavigate={navigate}
+        currentPage={currentPage}
       />
       <main className="main-content">
         {notification && (

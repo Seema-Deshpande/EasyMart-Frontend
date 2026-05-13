@@ -1,16 +1,27 @@
+import logo from '../../assets/hero.png';
+
 const Navbar = ({ isLoggedIn, user, onLogout, onNavigate, currentPage }) => {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark sticky-top shadow-sm">
       <div className="container">
         <a className="navbar-brand d-flex align-items-center clickable" onClick={() => onNavigate('home')}>
-          <img src="/logo.png" alt="EasyMart" width="30" height="30" className="d-inline-block align-top me-2" />
-          EasyMart
+          {/* Using filter: brightness(0) invert(1) ensures the icon is pure white for dark mode */}
+          <img 
+            src={logo} 
+            alt="EasyMart" 
+            width="35" 
+            height="35" 
+            className="d-inline-block align-top me-2" 
+            style={{ filter: 'brightness(0) invert(1)' }}
+          />
+          <span className="fw-bold fs-4">EasyMart</span>
         </a>
-        <div className="d-flex align-items-center">
-          <ul className="navbar-nav flex-row align-items-center gap-3">
+        
+        <div className="ms-auto d-flex align-items-center">
+          <ul className="navbar-nav flex-row align-items-center gap-2 gap-sm-3">
             <li className="nav-item">
               <a 
-                className={`nav-link clickable ${currentPage === 'home' ? 'active' : ''}`} 
+                className={`nav-link px-2 clickable ${currentPage === 'home' ? 'active' : ''}`} 
                 onClick={() => onNavigate('home')}
               >
                 Home
@@ -18,31 +29,29 @@ const Navbar = ({ isLoggedIn, user, onLogout, onNavigate, currentPage }) => {
             </li>
             <li className="nav-item">
               <a 
-                className={`nav-link clickable ${currentPage === 'products' ? 'active' : ''}`} 
+                className={`nav-link px-2 clickable ${currentPage === 'products' ? 'active' : ''}`} 
                 onClick={() => onNavigate('products')}
               >
                 Products
               </a>
             </li>
-            {isLoggedIn ? (
-              <>
-                <li className="nav-item">
-                  <span className="navbar-text me-3">Hello, {user?.name}</span>
-                </li>
-                <li className="nav-item">
-                  <button className="btn btn-outline-light btn-sm" onClick={onLogout}>Logout</button>
-                </li>
-              </>
-            ) : (
-              <li className="nav-item">
+            <li className="nav-item ms-lg-3">
+              {isLoggedIn ? (
+                <div className="d-flex align-items-center gap-2">
+                  <span className="navbar-text d-none d-md-inline text-light opacity-75">Hi, {user?.name}</span>
+                  <button className="btn btn-outline-warning btn-sm fw-bold border-2" onClick={onLogout}>
+                    Logout
+                  </button>
+                </div>
+              ) : (
                 <button 
-                  className="btn btn-outline-light btn-sm" 
+                  className="btn btn-warning btn-sm fw-bold px-3 border-2 shadow-sm" 
                   onClick={() => onNavigate('login')}
                 >
                   Login
                 </button>
-              </li>
-            )}
+              )}
+            </li>
           </ul>
         </div>
       </div>

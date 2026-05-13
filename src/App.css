@@ -1,9 +1,10 @@
 .hero-section {
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  color: #212529;
 }
 
 .main-content {
-  padding-top: 80px;
+  padding-top: 56px; /* Height of standard Bootstrap navbar */
 }
 
 .clickable {
@@ -12,4 +13,9 @@
 
 .text-star {
   color: #ffc107;
+}
+
+.tiny-dot {
+  font-size: 0.6rem;
+  vertical-align: middle;
 }
