@@ -1,5 +1,5 @@
 import './ProductSearch.css';
-import { CATEGORIES } from '../../utils/ constant';
+import { CATEGORIES, SORT_OPTIONS } from '../../utils/ constant';
 
 const ProductSearch = ({
   searchTerm,
@@ -59,11 +59,11 @@ const ProductSearch = ({
           onChange={(e) => setSortBy(e.target.value)}
           className="filter-select"
         >
-          <option value="default">Default</option>
-          <option value="price-low">Price: Low to High</option>
-          <option value="price-high">Price: High to Low</option>
-          <option value="rating">Highest Rated</option>
-          <option value="name">Name: A-Z</option>
+          {SORT_OPTIONS.map(({ value, label }) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
         </select>
       </div>
 

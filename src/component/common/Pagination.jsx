@@ -6,33 +6,40 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   return (
-    <div className="pagination-container">
-      <button 
-        disabled={currentPage === 1} 
-        onClick={() => onPageChange(currentPage - 1)}
-        className="pagination-btn"
-      >
-        Previous
-      </button>
+    <nav aria-label="Product pagination" className="d-flex justify-content-center mt-4">
+      <ul className="pagination">
+        <li className={`page-item ${currentPage === 1 ? 'disabled' : ''}`}>
+          <button 
+            className="page-link" 
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </button>
+        </li>
 
-      {pages.map((page) => (
-        <button
-          key={page}
-          onClick={() => onPageChange(page)}
-          className={`pagination-btn ${currentPage === page ? 'active' : ''}`}
-        >
-          {page}
-        </button>
-      ))}
+        {pages.map((page) => (
+          <li key={page} className={`page-item ${page === currentPage ? 'active' : ''}`}>
+            <button
+              className="page-link"
+              onClick={() => onPageChange(page)}
+            >
+              {page}
+            </button>
+          </li>
+        ))}
 
-      <button 
-        disabled={currentPage === totalPages} 
-        onClick={() => onPageChange(currentPage + 1)}
-        className="pagination-btn"
-      >
-        Next
-      </button>
-    </div>
+        <li className={`page-item ${currentPage === totalPages ? 'disabled' : ''}`}>
+          <button 
+            className="page-link" 
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </button>
+        </li>
+      </ul>
+    </nav>
   );
 };
 

@@ -84,107 +84,116 @@ const LoginForm = ({ onLogin, onCancel, showNotification }) => {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
-        <div className="auth-tabs">
-          <button 
-            className={`tab-btn ${activeTab === 'login' ? 'active' : ''}`}
-            onClick={() => handleTabChange('login')}
-          >
-            Login
-          </button>
-          <button 
-            className={`tab-btn ${activeTab === 'register' ? 'active' : ''}`}
-            onClick={() => handleTabChange('register')}
-          >
-            Register
-          </button>
+    <div className="auth-container d-flex justify-content-center align-items-center" style={{ minHeight: '80vh' }}>
+      <div className="auth-card card shadow" style={{ width: '100%', maxWidth: '400px' }}>
+        <div className="card-header bg-white pb-0 border-bottom-0 text-center pt-4">
+          <h2 className="fw-bold mb-3 text-dark">🛒 EasyMart Account</h2>
+          <ul className="nav nav-tabs nav-fill">
+            <li className="nav-item">
+              <button 
+                className={`nav-link ${activeTab === 'login' ? 'active' : ''}`}
+                onClick={() => handleTabChange('login')}
+              >
+                Login
+              </button>
+            </li>
+            <li className="nav-item">
+              <button 
+                className={`nav-link ${activeTab === 'register' ? 'active' : ''}`}
+                onClick={() => handleTabChange('register')}
+              >
+                Register
+              </button>
+            </li>
+          </ul>
         </div>
 
-        <form onSubmit={handleSubmit} className="auth-form">
-          {activeTab === 'register' && (
-            <div className="form-group">
-              <label>Full Name</label>
-              <input
-                type="text"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleChange}
-                placeholder="John Doe"
-                className={errors.fullName ? 'error' : ''}
-              />
-              {errors.fullName && <span className="error-text">{errors.fullName}</span>}
-            </div>
-          )}
-
-          <div className="form-group">
-            <label>Email Address</label>
-            <input
-              type="text"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="example@email.com"
-              className={errors.email ? 'error' : ''}
-            />
-            {errors.email && <span className="error-text">{errors.email}</span>}
-          </div>
-
-          <div className="form-group">
-            <label>Password</label>
-            <div className="password-input-wrapper">
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="••••••••"
-                className={errors.password ? 'error' : ''}
-              />
-              <button 
-                type="button" 
-                className="toggle-password"
-                onClick={() => setShowPassword(!showPassword)}
-              >
-                {showPassword ? 'Hide' : 'Show'}
-              </button>
-            </div>
-            {errors.password && <span className="error-text">{errors.password}</span>}
-          </div>
-
-          {activeTab === 'register' && (
-            <div className="form-group">
-              <label>Confirm Password</label>
-              <div className="password-input-wrapper">
+        <div className="card-body">
+          <form onSubmit={handleSubmit} className="auth-form" noValidate>
+            {activeTab === 'register' && (
+              <div className="mb-3">
+                <label className="form-label">Full Name</label>
                 <input
-                  type={showConfirmPassword ? "text" : "password"}
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
+                  type="text"
+                  name="fullName"
+                  value={formData.fullName}
                   onChange={handleChange}
-                  placeholder="••••••••"
-                  className={errors.confirmPassword ? 'error' : ''}
+                  placeholder="Jane Doe"
+                  className={`form-control ${errors.fullName ? 'is-invalid' : ''}`}
+                />
+                {errors.fullName && <div className="invalid-feedback">{errors.fullName}</div>}
+              </div>
+            )}
+
+            <div className="mb-3">
+              <label className="form-label">Email address</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="you@example.com"
+                className={`form-control ${errors.email ? 'is-invalid' : ''}`}
+              />
+              {errors.email && <div className="invalid-feedback">{errors.email}</div>}
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label">Password</label>
+              <div className="input-group">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Min. 6 characters"
+                  className={`form-control ${errors.password ? 'is-invalid' : ''}`}
                 />
                 <button 
                   type="button" 
-                  className="toggle-password"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="btn btn-outline-secondary"
+                  onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showConfirmPassword ? 'Hide' : 'Show'}
+                  {showPassword ? '👁️' : '👁️'}
                 </button>
+                {errors.password && <div className="invalid-feedback">{errors.password}</div>}
               </div>
-              {errors.confirmPassword && <span className="error-text">{errors.confirmPassword}</span>}
             </div>
-          )}
 
-          <div className="auth-actions">
-            <button type="submit" className="submit-auth-btn">
-              {activeTab === 'login' ? 'Login' : 'Create Account'}
-            </button>
-            <button type="button" className="cancel-auth-btn" onClick={onCancel}>
-              Cancel
-            </button>
-          </div>
-        </form>
+            {activeTab === 'register' && (
+              <div className="mb-3">
+                <label className="form-label">Confirm Password</label>
+                <div className="input-group">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    placeholder="Min. 6 characters"
+                    className={`form-control ${errors.confirmPassword ? 'is-invalid' : ''}`}
+                  />
+                  <button 
+                    type="button" 
+                    className="btn btn-outline-secondary"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? '👁️' : '👁️'}
+                  </button>
+                  {errors.confirmPassword && <div className="invalid-feedback">{errors.confirmPassword}</div>}
+                </div>
+              </div>
+            )}
+
+            <div className="d-grid gap-2 mt-4">
+              <button type="submit" className="btn btn-primary">
+                {activeTab === 'login' ? 'Login' : 'Create Account'}
+              </button>
+              <button type="button" className="btn btn-outline-danger" onClick={onCancel}>
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

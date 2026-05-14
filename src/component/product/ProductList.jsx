@@ -21,29 +21,29 @@ const ProductList = ({
 
       <ProductSearch {...filterProps} />
 
-      {products.length === 0 ? (
-        <div className="no-products-message">
-          <h3>No products match your search</h3>
-          <p>Try adjusting your filters or search keywords.</p>
-        </div>
-      ) : (
-        <>
-          <div className="product-grid">
-            {products.map((product) => (
+      <div className="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        {products.length === 0 ? (
+          <div className="col-12 text-center py-5">
+            <p className="text-muted fs-5">No products found. Try adjusting your filters.</p>
+          </div>
+        ) : (
+          products.map((product) => (
+            <div key={product._id} className="col">
               <ProductCard
-                key={product._id || product.id}
                 product={product}
                 onSelect={onSelectProduct}
               />
-            ))}
-          </div>
-          
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={onPageChange}
-          />
-        </>
+            </div>
+          ))
+        )}
+      </div>
+
+      {products.length > 0 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+        />
       )}
     </div>
   );

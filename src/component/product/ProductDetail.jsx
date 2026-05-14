@@ -6,9 +6,11 @@ const ProductDetail = ({ product, isLoggedIn, showNotification }) => {
   const [quantity, setQuantity] = useState(1);
   const [reviews, setReviews] = useState(product.reviews || []);
   const [showReviewForm, setShowReviewForm] = useState(false);
-  const [rating, setRating] = useState(5);
+  const [rating, setRating] = useState(0);
+  const [title, setTitle] = useState('');
   const [comment, setComment] = useState('');
   const [hasReviewed, setHasReviewed] = useState(false);
+  const [reviewErrors, setReviewErrors] = useState({});
 
   const {
     name,
@@ -47,14 +49,24 @@ const ProductDetail = ({ product, isLoggedIn, showNotification }) => {
 
   const handleReviewSubmit = (e) => {
     e.preventDefault();
+    const errors = {};
+    if (!title.trim()) errors.title = 'Title is required';
     if (!comment.trim()) {
-      showNotification('Please enter a comment', 'error');
+      errors.comment = 'Comment is required';
+    } else if (comment.trim().length < 10) {
+      errors.comment = 'Comment must be at least 10 characters';
+    }
+    if (rating === 0) errors.rating = 'Please select a rating';
+
+    if (Object.keys(errors).length > 0) {
+      setReviewErrors(errors);
       return;
     }
 
     const newReview = {
       id: Date.now(),
       name: "Current User", // Simplified for this task
+      title,
       rating: Number(rating),
       comment,
       createdAt: new Date().toISOString()
@@ -63,7 +75,10 @@ const ProductDetail = ({ product, isLoggedIn, showNotification }) => {
     setReviews([newReview, ...reviews]);
     setHasReviewed(true);
     setShowReviewForm(false);
+    setTitle('');
     setComment('');
+    setRating(0);
+    setReviewErrors({});
     showNotification('Review submitted successfully!', 'success');
   };
 
@@ -141,29 +156,67 @@ const ProductDetail = ({ product, isLoggedIn, showNotification }) => {
         {showReviewForm && (
           <div className="card mb-4 shadow-sm border-0">
             <div className="card-body">
-              <h4 className="card-title mb-3">Submit Your Review</h4>
-              <form onSubmit={handleReviewSubmit}>
+              <h4 className="card-title mb-4">Submit Your Review</h4>
+              <form onSubmit={handleReviewSubmit} noValidate>
                 <div className="mb-3">
-                  <label className="form-label">Rating:</label>
-                  <select className="form-select" value={rating} onChange={(e) => setRating(e.target.value)}>
-                    {[5,4,3,2,1].map(num => (
-                      <option key={num} value={num}>{num} Stars</option>
+                  <label className="form-label fw-bold">Rating</label>
+                  <div className="d-flex gap-3 mb-2">
+                    {[1, 2, 3, 4, 5].map((num) => (
+                      <div key={num} className="form-check form-check-inline">
+                        <input
+                          className={`form-check-input ${reviewErrors.rating ? 'is-invalid' : ''}`}
+                          type="radio"
+                          name="ratingOptions"
+                          id={`rating${num}`}
+                          value={num}
+                          checked={rating === num}
+                          onChange={() => {
+                            setRating(num);
+                            if (reviewErrors.rating) setReviewErrors(prev => ({ ...prev, rating: '' }));
+                          }}
+                        />
+                        <label className="form-check-label" htmlFor={`rating${num}`}>
+                          {num} ★
+                        </label>
+                      </div>
                     ))}
-                  </select>
+                  </div>
+                  {reviewErrors.rating && <div className="text-danger small">{reviewErrors.rating}</div>}
                 </div>
+
                 <div className="mb-3">
-                  <label className="form-label">Comment:</label>
+                  <label className="form-label fw-bold">Review Title</label>
+                  <input
+                    type="text"
+                    className={`form-control ${reviewErrors.title ? 'is-invalid' : ''}`}
+                    value={title}
+                    onChange={(e) => {
+                      setTitle(e.target.value);
+                      if (reviewErrors.title) setReviewErrors(prev => ({ ...prev, title: '' }));
+                    }}
+                    placeholder="Brief summary of your experience"
+                  />
+                  {reviewErrors.title && <div className="invalid-feedback">{reviewErrors.title}</div>}
+                </div>
+
+                <div className="mb-3">
+                  <label className="form-label fw-bold">Review Comment</label>
                   <textarea 
-                    className="form-control"
+                    className={`form-control ${reviewErrors.comment ? 'is-invalid' : ''}`}
                     value={comment} 
-                    onChange={(e) => setComment(e.target.value)}
-                    placeholder="Share your thoughts about this product..."
+                    onChange={(e) => {
+                      setComment(e.target.value);
+                      if (reviewErrors.comment) setReviewErrors(prev => ({ ...prev, comment: '' }));
+                    }}
+                    placeholder="Share your thoughts about this product (minimum 10 characters)..."
                     rows="4"
                   />
+                  {reviewErrors.comment && <div className="invalid-feedback">{reviewErrors.comment}</div>}
                 </div>
+
                 <div className="d-flex gap-2">
-                  <button type="submit" className="btn btn-primary">Submit</button>
-                  <button type="button" className="btn btn-light" onClick={() => setShowReviewForm(false)}>Cancel</button>
+                  <button type="submit" className="btn btn-primary px-4">Submit Review</button>
+                  <button type="button" className="btn btn-outline-secondary px-4" onClick={() => setShowReviewForm(false)}>Cancel</button>
                 </div>
               </form>
             </div>
@@ -181,7 +234,10 @@ const ProductDetail = ({ product, isLoggedIn, showNotification }) => {
                 <div className="card border-0 shadow-sm">
                   <div className="card-body">
                     <div className="d-flex justify-content-between mb-2">
-                       <strong className="fs-5">{review.name}</strong>
+                       <div>
+                         <strong className="fs-5 d-block">{review.name}</strong>
+                         {review.title && <h6 className="fw-bold text-dark mt-1">{review.title}</h6>}
+                       </div>
                        <span className="text-star">{'★'.repeat(review.rating)}</span>
                     </div>
                     <p className="card-text mb-2 text-muted">{review.comment}</p>
