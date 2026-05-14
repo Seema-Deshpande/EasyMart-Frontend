@@ -1,5 +1,4 @@
 import './ProductCard.css';
-import { formatPrice } from '../../utils/helper';
 
 const ProductCard = ({ product, onSelect, onQuickView }) => {
   const {

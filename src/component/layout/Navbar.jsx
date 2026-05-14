@@ -1,5 +1,3 @@
-import logo from '../../assets/hero.png';
-
 const Navbar = ({ isLoggedIn, user, onLogout, onNavigate, currentPage }) => {
   return (
     <nav className="navbar navbar-expand-lg navbar-dark sticky-top" style={{ background: '#667eea' }}>

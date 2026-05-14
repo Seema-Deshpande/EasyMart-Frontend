@@ -91,7 +91,7 @@ function App() {
   }, []);
 
   // Quick View Modal Reference
-  const modalRef = useState(null);
+  // Removed unused modalRef
   
   const openQuickView = (product) => {
     setQuickViewProduct(product);
@@ -179,6 +179,7 @@ function App() {
   }, [filteredProducts, pageNum]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPageNum(1);
   }, [searchTerm, selectedCategory, minPrice, maxPrice, inStockOnly, sortBy]);
 
