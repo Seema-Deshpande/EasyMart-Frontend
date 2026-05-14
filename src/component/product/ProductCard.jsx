@@ -1,7 +1,7 @@
 import './ProductCard.css';
 import { formatPrice } from '../../utils/helper';
 
-const ProductCard = ({ product, onSelect }) => {
+const ProductCard = ({ product, onSelect, onQuickView }) => {
   const {
     name,
     price,
@@ -22,30 +22,45 @@ const ProductCard = ({ product, onSelect }) => {
   const isInStock = stock > 0;
 
   return (
-    <div className="card h-100 shadow-sm clickable product-card border-0" onClick={() => onSelect && onSelect(product)}>
-      <div className="position-relative">
+    <div className="card h-100 shadow-sm clickable product-card border-0 rounded-3 overflow-hidden">
+      <div className="position-relative" onClick={() => onSelect && onSelect(product)}>
         <img 
           src={displayImage} 
           alt={name} 
           className="card-img-top object-fit-cover" 
-          style={{ height: '200px' }}
+          style={{ height: '280px' }}
           onError={handleImageError}
         />
-        <div className={`position-absolute top-0 end-0 m-2 badge ${isInStock ? 'bg-success' : 'bg-danger'}`}>
-          {isInStock ? 'In Stock' : 'Out of Stock'}
+        <div className="product-actions">
+           <button 
+             className="btn btn-light btn-sm shadow-sm quick-view-btn"
+             onClick={(e) => {
+               e.stopPropagation();
+               onQuickView && onQuickView(product);
+             }}
+           >
+             Quick View
+           </button>
         </div>
       </div>
       
-      <div className="card-body d-flex flex-column">
-        <h5 className="card-title text-truncate mb-2" title={name}>{name}</h5>
+      <div className="card-body p-3 d-flex flex-column" onClick={() => onSelect && onSelect(product)}>
+        <h5 className="card-title fw-bold text-dark mb-2 text-truncate" style={{ fontSize: '1.1rem' }}>{name}</h5>
+        
         <div className="mt-auto">
-          <h6 className="card-subtitle mb-2 text-primary fw-bold">{formatPrice(price)}</h6>
+          <h5 className="text-success fw-bold mb-1">${price.toFixed(2)}</h5>
           
-          <div className="mb-2">
-            <span className="text-warning me-1">{'★'.repeat(Math.round(rating))}</span>
-            <span className="text-muted small">{'☆'.repeat(5 - Math.round(rating))} ({numReviews})</span>
+          <div className="d-flex align-items-center mb-2">
+            <i className="bi bi-star-fill text-warning me-1 small"></i>
+            <span className="fw-bold me-1 small">{rating}</span>
+            <span className="text-muted small">({numReviews} reviews)</span>
           </div>
-          <button className="btn btn-outline-primary btn-sm w-100">View Details</button>
+
+          <div>
+            <span className={`badge ${isInStock ? 'bg-success' : 'bg-danger'} px-2 py-1`}>
+              {isInStock ? 'In Stock' : 'Out of Stock'}
+            </span>
+          </div>
         </div>
       </div>
     </div>

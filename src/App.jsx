@@ -27,6 +27,9 @@ function App() {
   // Notification State
   const [notification, setNotification] = useState(null);
 
+  // Modal State
+  const [quickViewProduct, setQuickViewProduct] = useState(null);
+
   // Loading State
   const [isLoading, setIsLoading] = useState(true);
 
@@ -86,6 +89,21 @@ function App() {
     const id = setTimeout(() => setIsLoading(false), 800);
     return () => clearTimeout(id);
   }, []);
+
+  // Quick View Modal Reference
+  const modalRef = useState(null);
+  
+  const openQuickView = (product) => {
+    setQuickViewProduct(product);
+    // After state update, we use Bootstrap's JS API to show the modal
+    setTimeout(() => {
+      const modalElement = document.getElementById('quickViewModal');
+      if (modalElement && window.bootstrap) {
+        const modal = new window.bootstrap.Modal(modalElement);
+        modal.show();
+      }
+    }, 10);
+  };
 
   // Utility: Show Notification
   const showNotification = (message, type) => {
@@ -183,9 +201,10 @@ function App() {
           />
         ) : (
           <HomePage 
-            products={MOCK_PRODUCTS.filter(p => p.isFeatured).slice(0, 3)} 
+            products={MOCK_PRODUCTS.filter(p => p.isFeatured).slice(0, 4)} 
             onSelectProduct={(p) => navigate('detail', p)}
             onShopNow={() => navigate('products')}
+            onQuickView={openQuickView}
           />
         );
       case 'products':
@@ -197,6 +216,7 @@ function App() {
             totalPages={totalPages}
             onPageChange={setPageNum}
             onSelectProduct={(p) => navigate('detail', p)}
+            onQuickView={openQuickView}
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
             selectedCategory={selectedCategory}
@@ -213,13 +233,14 @@ function App() {
         );
       case 'home':
       default: {
-        const featured = MOCK_PRODUCTS.filter(p => p.isFeatured).slice(0, 3);
-        const homeProducts = featured.length > 0 ? featured : MOCK_PRODUCTS.slice(0, 3);
+        const featured = MOCK_PRODUCTS.filter(p => p.isFeatured).slice(0, 4);
+        const homeProducts = featured.length > 0 ? featured : MOCK_PRODUCTS.slice(0, 4);
         return (
           <HomePage 
             products={homeProducts} 
             onSelectProduct={(p) => navigate('detail', p)}
             onShopNow={() => navigate('products')}
+            onQuickView={openQuickView}
           />
         );
       }
@@ -256,6 +277,60 @@ function App() {
         {renderPage()}
       </main>
       <Footer />
+
+      {/* Quick View Modal */}
+      <div className="modal fade" id="quickViewModal" tabIndex="-1" aria-labelledby="quickViewModalLabel" aria-hidden="true">
+        <div className="modal-dialog modal-lg modal-dialog-centered">
+          <div className="modal-content border-0 shadow-lg">
+            <div className="modal-header border-bottom-0">
+              <h5 className="modal-title fw-bold" id="quickViewModalLabel">Product Quick View</h5>
+              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div className="modal-body p-4">
+              {quickViewProduct && (
+                <div className="row g-4">
+                  <div className="col-md-6">
+                    <img 
+                      src={quickViewProduct.image || (quickViewProduct.images && quickViewProduct.images[0]) || 'https://via.placeholder.com/400x400?text=Product+Image'} 
+                      alt={quickViewProduct.name} 
+                      className="img-fluid rounded shadow-sm"
+                    />
+                  </div>
+                  <div className="col-md-6 d-flex flex-column justify-content-center">
+                    <h2 className="fw-bold mb-2">{quickViewProduct.name}</h2>
+                    <div className="d-flex align-items-center mb-3">
+                      <span className="badge bg-primary fs-6 me-2">${quickViewProduct.price.toFixed(2)}</span>
+                      <span className="text-warning">
+                        {'★'.repeat(Math.round(quickViewProduct.rating))}
+                        <span className="text-muted opacity-50">{'★'.repeat(5 - Math.round(quickViewProduct.rating))}</span>
+                      </span>
+                    </div>
+                    <p className="text-muted mb-4">{quickViewProduct.description}</p>
+                    <div className="d-grid">
+                      <button 
+                        className="btn btn-primary btn-lg fw-bold"
+                        onClick={() => {
+                          if (!isLoggedIn) {
+                            showNotification('Please log in to add items to your cart', 'error');
+                          } else {
+                            showNotification(`${quickViewProduct.name} added to cart!`, 'success');
+                          }
+                          // Close modal using data-bs-dismiss behavior by clicking hidden button or using JS API
+                          const modalElement = document.getElementById('quickViewModal');
+                          const modal = window.bootstrap.Modal.getInstance(modalElement);
+                          modal.hide();
+                        }}
+                      >
+                        Add to Cart
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -10,13 +10,16 @@ const ProductList = ({
   totalPages,
   onPageChange,
   onSelectProduct,
+  onQuickView,
   ...filterProps
 }) => {
   return (
-    <div className="product-list-page">
-      <header className="product-list-header">
-        <h1>Our Products</h1>
-        <p className="product-count">{totalProducts} product(s) found</p>
+    <div className="product-list-page container py-4">
+      <header className="d-flex justify-content-between align-items-center mb-4">
+        <h1 className="fw-bold mb-0">Our Products</h1>
+        <span className="badge bg-primary fs-6 px-3 py-2 rounded-pill">
+          {totalProducts} products
+        </span>
       </header>
 
       <ProductSearch {...filterProps} />
@@ -28,10 +31,11 @@ const ProductList = ({
           </div>
         ) : (
           products.map((product) => (
-            <div key={product._id} className="col">
+            <div key={product._id || product.id} className="col">
               <ProductCard
                 product={product}
                 onSelect={onSelectProduct}
+                onQuickView={onQuickView}
               />
             </div>
           ))
