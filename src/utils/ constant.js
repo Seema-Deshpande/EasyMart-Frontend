@@ -15,3 +15,10 @@ export const SORT_OPTIONS = [
   { value: 'rating', label: 'Highest Rated' },
   { value: 'name', label: 'Name: A-Z' }
 ];
+
+export const PAYMENT_METHODS = [
+  { value: 'credit-card', label: 'Credit Card' },
+  { value: 'debit-card', label: 'Debit Card' },
+  { value: 'net-banking', label: 'Net Banking' },
+  { value: 'upi', label: 'UPI' }
+];

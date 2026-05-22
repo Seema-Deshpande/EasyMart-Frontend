@@ -1,0 +1,8 @@
+.cart-page .table > :not(caption) > * > * {
+  padding: 1.5rem 0.75rem;
+}
+
+.cart-page .input-group-text {
+  min-width: 40px;
+  justify-content: center;
+}
