@@ -77,7 +77,13 @@ const OrderDetailPage = () => {
                     {order.items.map(item => (
                       <tr key={item._id || item.id}>
                         <td style={{ width: '80px' }}>
-                          <img src={item.image || 'https://via.placeholder.com/60x60'} alt={item.name} className="rounded" style={{ width: '60px', height: '60px', objectFit: 'cover' }} />
+                          <img 
+                            src={(item.images && item.images[0]) || item.image || 'https://via.placeholder.com/60x60'} 
+                            alt={item.name} 
+                            className="rounded" 
+                            style={{ width: '60px', height: '60px', objectFit: 'cover' }} 
+                            onError={(e) => e.target.src = 'https://via.placeholder.com/60x60?text=P'}
+                          />
                         </td>
                         <td>
                           <h6 className="mb-0 fw-bold">{item.name}</h6>

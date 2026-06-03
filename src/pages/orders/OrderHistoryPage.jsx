@@ -78,10 +78,11 @@ const OrderHistoryPage = () => {
                     <div key={item._id || item.id} className="col-md-4">
                       <div className="d-flex align-items-center">
                         <img 
-                          src={item.image || 'https://via.placeholder.com/60x60?text=Product'} 
+                          src={(item.images && item.images[0]) || item.image || 'https://via.placeholder.com/60x60?text=Product'} 
                           alt={item.name} 
                           className="rounded me-3"
                           style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+                          onError={(e) => e.target.src = 'https://via.placeholder.com/60x60?text=P'}
                         />
                         <div className="text-truncate">
                           <p className="mb-0 fw-bold small">{item.name}</p>

@@ -46,10 +46,11 @@ const CartPage = () => {
                         <td className="px-4 py-3">
                           <div className="d-flex align-items-center">
                             <img 
-                              src={item.image || 'https://via.placeholder.com/80x80?text=Product'} 
+                              src={(item.images && item.images[0]) || item.image || 'https://via.placeholder.com/80x80?text=Product'} 
                               alt={item.name} 
                               className="rounded me-3"
                               style={{ width: '60px', height: '60px', objectFit: 'cover' }}
+                              onError={(e) => e.target.src = 'https://via.placeholder.com/80x80?text=P'}
                             />
                             <div>
                                 <h6 className="mb-0 fw-bold">{item.name}</h6>

@@ -13,10 +13,10 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-dark sticky-top" style={{ background: '#667eea' }}>
+    <nav className="navbar navbar-expand-lg navbar-dark sticky-top shadow-sm" style={{ background: '#456fe8' }}>
       <div className="container">
         <Link className="navbar-brand d-flex align-items-center" to="/">
-          <i className="bi bi-bag-fill me-2 fs-3"></i>
+          <i className="bi bi-bag-check me-2 fs-3"></i>
           <span className="fw-bold fs-4">EasyMart</span>
         </Link>
 
@@ -75,7 +75,7 @@ const Navbar = () => {
                     <div className="bg-light text-primary rounded-circle d-flex align-items-center justify-content-center" style={{ width: '32px', height: '32px' }}>
                       <i className="bi bi-person-fill"></i>
                     </div>
-                    <span className="fw-semibold">{user.name}</span>
+                    <span className="fw-semibold text-white">{user.name}</span>
                   </button>
                   <ul className="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
                     <li>

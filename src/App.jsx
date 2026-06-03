@@ -13,7 +13,7 @@ import OrderHistoryPage from './pages/orders/OrderHistoryPage';
 import OrderDetailPage from './pages/orders/OrderDetailPage';
 import ProfilePage from './pages/profile/ProfilePage';
 import AddressesPage from './pages/profile/AddressesPage';
-import AdminLayout from './pages/admin/AdminLayout';
+import AdminLayout from './component/admin/AdminLayout';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import AdminProductsPage from './pages/admin/AdminProductsPage';
 import AdminOrdersPage from './pages/admin/AdminOrdersPage';

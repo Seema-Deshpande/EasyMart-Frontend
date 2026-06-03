@@ -18,7 +18,10 @@ const LoginPage = () => {
     }
 
     // Simulated: accept any email/password
-    login({ name: 'User', email });
+    const nameFromEmail = email.split('@')[0];
+    const formattedName = nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1);
+    
+    login({ name: formattedName, email });
     setNotification({ message: 'Logged in successfully!', type: 'success' });
 
     setTimeout(() => {

@@ -46,9 +46,10 @@ const ProductDetailPage = () => {
       <div className="row g-5">
         <div className="col-md-6">
           <img 
-            src={product.image || 'https://via.placeholder.com/600x600?text=Product+Image'} 
+            src={(product.images && product.images[0]) || product.image || 'https://via.placeholder.com/600x600?text=Product+Image'} 
             alt={product.name} 
             className="img-fluid rounded shadow"
+            onError={(e) => e.target.src = 'https://via.placeholder.com/600x600?text=P'}
           />
         </div>
         <div className="col-md-6">

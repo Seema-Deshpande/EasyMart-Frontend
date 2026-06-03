@@ -4,7 +4,7 @@
 }
 
 .main-content {
-  padding-top: 56px; /* Height of standard Bootstrap navbar */
+  /* padding-top: 56px; - Removed to use sticky-top properly */
 }
 
 .clickable {
