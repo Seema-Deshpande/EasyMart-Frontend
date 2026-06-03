@@ -34,3 +34,18 @@ export const adminUpdateOrderStatus = async (orderId, status) => {
     const res = await api.put(`/admin/orders/${orderId}/status`, { status });
     return res.data.data;
 };
+
+export const adminGetUsers = async () => {
+    const res = await api.get('/admin/users');
+    return res.data.data;
+};
+
+export const adminUpdateUserRole = async (userId, role) => {
+    const res = await api.put(`/admin/users/${userId}/role`, { role });
+    return res.data.data;
+};
+
+export const adminDeleteUser = async (userId) => {
+    const res = await api.delete(`/admin/users/${userId}`);
+    return res.data.data;
+};

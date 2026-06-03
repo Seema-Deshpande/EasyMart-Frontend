@@ -1,9 +1,11 @@
-import { useState } from 'react';
-import { MOCK_PRODUCTS } from '../../data/products';
+import { useState, useEffect } from 'react';
+import { adminGetProducts, adminCreateProduct, adminUpdateProduct, adminDeleteProduct } from '../../service/adminService';
 import Notification from '../../component/common/Notification';
 
 const AdminProductsPage = () => {
-    const [products, setProducts] = useState(MOCK_PRODUCTS);
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
     const [notification, setNotification] = useState(null);
@@ -13,10 +15,27 @@ const AdminProductsPage = () => {
         name: '', category: '', price: '', stock: '', description: '', isFeatured: false
     });
 
-    const categories = [...new Set(MOCK_PRODUCTS.map(p => p.category))];
+    useEffect(() => {
+        fetchProducts();
+    }, []);
+
+    const fetchProducts = async () => {
+        try {
+            setLoading(true);
+            const data = await adminGetProducts();
+            setProducts(data.products || data);
+            setError(null);
+        } catch (err) {
+            setError('Failed to fetch products');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const categories = [...new Set(products.map(p => p.category))];
 
     const filteredProducts = products.filter(product => {
-        const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSearch = product.name?.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesCategory = !selectedCategory || product.category === selectedCategory;
         return matchesSearch && matchesCategory;
     });
@@ -39,15 +58,36 @@ const AdminProductsPage = () => {
         setIsModalOpen(true);
     };
 
-    const handleDelete = (id) => {
+    const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this product?')) {
-            // TODO: Call DELETE API
-            setProducts(products.filter(p => (p._id || p.id) !== id));
-            showNotification('Product deleted successfully', 'success');
+            try {
+                await adminDeleteProduct(id);
+                setProducts(products.filter(p => (p._id || p.id) !== id));
+                showNotification('Product deleted successfully', 'success');
+            } catch (err) {
+                showNotification('Failed to delete product', 'error');
+            }
         }
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            if (editingProduct) {
+                const updated = await adminUpdateProduct(editingProduct._id || editingProduct.id, formData);
+                setProducts(products.map(p => (p._id || p.id) === (updated._id || updated.id) ? updated : p));
+                showNotification('Product updated successfully', 'success');
+            } else {
+                const created = await adminCreateProduct(formData);
+                setProducts([created, ...products]);
+                showNotification('Product created successfully', 'success');
+            }
+            setIsModalOpen(false);
+            setEditingProduct(null);
+        } catch (err) {
+            showNotification(err.response?.data?.message || 'Operation failed', 'error');
+        }
+    };
         e.preventDefault();
         // TODO: Call POST/PUT API
         if (editingProduct) {

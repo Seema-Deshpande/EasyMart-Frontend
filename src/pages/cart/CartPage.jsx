@@ -1,9 +1,11 @@
 import { useNavigate, Link } from 'react-router-dom';
-import useCart from '../../context/useCart';
+import { useSelector, useDispatch } from 'react-redux';
+import { removeCartItem, updateCartItem } from '../../store/cartSlice';
 import './CartPage.css';
 
 const CartPage = () => {
-  const { cartItems, removeItem, updateQuantity, totalPrice } = useCart();
+  const dispatch = useDispatch();
+  const { items: cartItems, totalPrice } = useSelector((state) => state.cart);
   const navigate = useNavigate();
 
   const shipping = totalPrice > 100 ? 0 : 5.99;
@@ -63,7 +65,7 @@ const CartPage = () => {
                           <div className="input-group input-group-sm" style={{ width: '100px' }}>
                             <button 
                               className="btn btn-outline-secondary" 
-                              onClick={() => updateQuantity(item._id, item.quantity - 1)}
+                              onClick={() => dispatch(updateCartItem({ itemId: item._id, quantity: item.quantity - 1 }))}
                               disabled={item.quantity <= 1}
                             >
                               -
@@ -71,7 +73,7 @@ const CartPage = () => {
                             <span className="input-group-text bg-white px-3">{item.quantity}</span>
                             <button 
                               className="btn btn-outline-secondary" 
-                              onClick={() => updateQuantity(item._id, item.quantity + 1)}
+                              onClick={() => dispatch(updateCartItem({ itemId: item._id, quantity: item.quantity + 1 }))}
                             >
                               +
                             </button>
@@ -81,7 +83,7 @@ const CartPage = () => {
                         <td className="py-3 text-end px-4">
                           <button 
                             className="btn btn-sm btn-outline-danger border-0" 
-                            onClick={() => removeItem(item._id)}
+                            onClick={() => dispatch(removeCartItem(item._id))}
                           >
                             <i className="bi bi-trash"></i>
                           </button>

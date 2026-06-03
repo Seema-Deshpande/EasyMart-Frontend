@@ -1,16 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import useCart from '../../context/useCart';
-import useOrder from '../../context/useOrder';
-import useAuth from '../../context/useAuth';
+import { useSelector, useDispatch } from 'react-redux';
+import { clearCart } from '../../store/cartSlice';
+import { placeOrder } from '../../store/ordersSlice';
 import Notification from '../../component/common/Notification';
 import { PAYMENT_METHODS } from '../../utils/ constant';
 
 const CheckoutPage = () => {
   const [step, setStep] = useState(1);
-  const { cartItems, totalPrice, clearCart } = useCart();
-  const { placeOrder } = useOrder();
-  const { user } = useAuth();
+  const dispatch = useDispatch();
+  const { items: cartItems, totalPrice } = useSelector((state) => state.cart);
+  const { user } = useSelector((state) => state.auth);
+  const { loading, error } = useSelector((state) => state.orders);
   const navigate = useNavigate();
   const [notification, setNotification] = useState(null);
 
@@ -70,24 +71,24 @@ const CheckoutPage = () => {
     });
   };
 
-  const handlePlaceOrder = () => {
+  const handlePlaceOrder = async () => {
     const orderDetails = {
-      items: cartItems,
       shippingAddress: shippingData,
-      paymentMethod: paymentData.paymentMethod,
-      subtotal,
-      tax,
-      shipping_fee,
-      total
+      paymentMethod: paymentData.paymentMethod
     };
     
-    const newOrder = placeOrder(orderDetails);
-    showNotification('Order placed successfully! Redirecting...', 'success');
+    const result = await dispatch(placeOrder(orderDetails));
     
-    setTimeout(() => {
-      clearCart();
-      navigate(`/orders/${newOrder._id}`);
-    }, 1500);
+    if (placeOrder.fulfilled.match(result)) {
+      showNotification('Order placed successfully! Redirecting...', 'success');
+      const newOrder = result.payload;
+      setTimeout(() => {
+        dispatch(clearCart());
+        navigate(`/orders/${newOrder._id}`);
+      }, 1500);
+    } else {
+      showNotification(result.payload || 'Failed to place order', 'error');
+    }
   };
 
   useEffect(() => {

@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import useAuth from '../../context/useAuth';
+import { useSelector, useDispatch } from 'react-redux';
+import { addAddress, updateAddress, deleteAddress, setDefaultAddress } from '../../store/authSlice';
 import Notification from '../../component/common/Notification';
 
 const AddressesPage = () => {
-    const { user, addAddress, updateAddress, deleteAddress, setDefaultAddress } = useAuth();
+    const { user } = useSelector((state) => state.auth);
+    const dispatch = useDispatch();
     const addresses = user?.addresses || [];
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState(null);
@@ -27,10 +29,10 @@ const AddressesPage = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (editingId) {
-            updateAddress(editingId, formData);
+            dispatch(updateAddress({ id: editingId, updates: formData }));
             showNotification('Address updated!', 'success');
         } else {
-            addAddress(formData);
+            dispatch(addAddress(formData));
             showNotification('New address added!', 'success');
         }
         resetForm();
@@ -135,10 +137,10 @@ const AddressesPage = () => {
                                             </button>
                                             <ul className="dropdown-menu dropdown-menu-end">
                                                 {!address.isDefault && (
-                                                    <li><button className="dropdown-item" onClick={() => setDefaultAddress(address._id)}>Set as Default</button></li>
+                                                    <li><button className="dropdown-item" onClick={() => dispatch(setDefaultAddress(address._id))}>Set as Default</button></li>
                                                 )}
                                                 <li><button className="dropdown-item" onClick={() => handleEdit(address)}>Edit</button></li>
-                                                <li><button className="dropdown-item text-danger" onClick={() => deleteAddress(address._id)}>Delete</button></li>
+                                                <li><button className="dropdown-item text-danger" onClick={() => dispatch(deleteAddress(address._id))}>Delete</button></li>
                                             </ul>
                                         </div>
                                     </div>

@@ -1,42 +1,57 @@
-import useOrder from '../../context/useOrder';
+import { useState, useEffect } from 'react';
+import { adminGetOrders, adminUpdateOrderStatus } from '../../service/adminService';
 import Notification from '../../component/common/Notification';
-import { useState } from 'react';
 
 const AdminOrdersPage = () => {
-    const { orders, updateOrderStatus } = useOrder();
+    const [orders, setOrders] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [notification, setNotification] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
+
+    useEffect(() => {
+        fetchOrders();
+    }, []);
+
+    const fetchOrders = async () => {
+        try {
+            setLoading(true);
+            const data = await adminGetOrders();
+            setOrders(data.orders || data);
+            setError(null);
+        } catch (err) {
+            setError('Failed to fetch orders');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const showNotification = (message, type) => {
         setNotification({ message, type });
         setTimeout(() => setNotification(null), 3000);
     };
 
-    const handleStatusChange = (id, newStatus) => {
-        updateOrderStatus(id, newStatus);
-        showNotification(`Order status updated to ${newStatus}`, 'success');
+    const handleStatusChange = async (id, newStatus) => {
+        try {
+            await adminUpdateOrderStatus(id, newStatus);
+            setOrders(orders.map(o => (o._id || o.id) === id ? { ...o, status: newStatus } : o));
+            showNotification(`Order status updated to ${newStatus}`, 'success');
+        } catch (err) {
+            showNotification('Failed to update order status', 'error');
+        }
     };
 
-    // Derived mock orders if empty (to see initial layout)
-    const displayOrders = orders.length > 0 ? orders : [
-        {
-            _id: 'ORD-TEST-001',
-            shippingAddress: { fullName: 'Demo Customer' },
-            createdAt: new Date().toISOString(),
-            total: 245.99,
-            status: 'Pending',
-            items: [{}, {}]
-        }
-    ];
-
-    const filteredOrders = displayOrders.filter(order => {
+    const filteredOrders = orders.filter(order => {
         const matchesID = (order._id || '').toLowerCase().includes(searchTerm.toLowerCase());
         const matchesStatus = !statusFilter || order.status === statusFilter;
         return matchesID && matchesStatus;
     });
 
     const statusOptions = ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled'];
+
+    if (loading) return <div>Loading orders...</div>;
+    if (error) return <div className="text-danger">{error}</div>;
 
     return (
         <div>

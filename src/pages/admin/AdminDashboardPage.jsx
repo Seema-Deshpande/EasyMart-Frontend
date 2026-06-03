@@ -1,33 +1,60 @@
-import useOrder from '../../context/useOrder';
-import { MOCK_PRODUCTS } from '../../data/products';
+import { useState, useEffect } from 'react';
+import { adminGetStats, adminGetOrders, adminGetProducts } from '../../service/adminService';
 
 const AdminDashboardPage = () => {
-    const { orders } = useOrder();
-    
-    const lowStockProducts = MOCK_PRODUCTS.filter(p => p.stock < 10);
+    const [statsData, setStatsData] = useState(null);
+    const [orders, setOrders] = useState([]);
+    const [lowStockProducts, setLowStockProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const [stats, ordersData, productsData] = await Promise.all([
+                    adminGetStats(),
+                    adminGetOrders({ limit: 10 }),
+                    adminGetProducts()
+                ]);
+                setStatsData(stats);
+                setOrders(ordersData.orders || ordersData);
+                
+                const products = productsData.products || productsData;
+                setLowStockProducts(products.filter(p => p.stock < 10));
+            } catch (err) {
+                setError('Failed to load dashboard data',err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    if (loading) return <div>Loading dashboard...</div>;
+    if (error) return <div className="text-danger">{error}</div>;
 
     const stats = [
         { 
             label: 'Total Revenue', 
-            value: `$${orders.filter(o => o.status === 'Delivered').reduce((acc, o) => acc + o.total, 0).toFixed(2)}`, 
+            value: `$${statsData?.totalRevenue?.toFixed(2) || '0.00'}`, 
             icon: 'bi-briefcase-fill', 
             bg: '#198754' 
         },
         { 
             label: 'Total Orders', 
-            value: orders.length, 
+            value: statsData?.totalOrders || 0, 
             icon: 'bi-receipt', 
             bg: '#0d6efd' 
         },
         { 
             label: 'Total Products', 
-            value: MOCK_PRODUCTS.length, 
+            value: statsData?.totalProducts || 0, 
             icon: 'bi-box-seam', 
             bg: '#ffc107' 
         },
         { 
             label: 'Low Stock Items', 
-            value: lowStockProducts.length, 
+            value: statsData?.lowStockCount || 0, 
             icon: 'bi-exclamation-triangle-fill', 
             bg: '#dc3545' 
         }

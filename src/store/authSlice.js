@@ -42,6 +42,43 @@ const authSlice = createSlice({
             localStorage.removeItem('token');
             localStorage.removeItem('user');
         },
+        updateProfile(state, action) {
+            if (state.user) {
+                state.user = { ...state.user, ...action.payload };
+                localStorage.setItem('user', JSON.stringify(state.user));
+            }
+        },
+        addAddress(state, action) {
+            if (state.user) {
+                const newAddress = { ...action.payload, _id: Date.now().toString() };
+                state.user.addresses = [...(state.user.addresses || []), newAddress];
+                localStorage.setItem('user', JSON.stringify(state.user));
+            }
+        },
+        updateAddress(state, action) {
+            if (state.user && state.user.addresses) {
+                const { id, updates } = action.payload;
+                state.user.addresses = state.user.addresses.map(addr => 
+                    addr._id === id ? { ...addr, ...updates } : addr
+                );
+                localStorage.setItem('user', JSON.stringify(state.user));
+            }
+        },
+        deleteAddress(state, action) {
+            if (state.user && state.user.addresses) {
+                state.user.addresses = state.user.addresses.filter(addr => addr._id !== action.payload);
+                localStorage.setItem('user', JSON.stringify(state.user));
+            }
+        },
+        setDefaultAddress(state, action) {
+            if (state.user && state.user.addresses) {
+                state.user.addresses = state.user.addresses.map(addr => ({
+                    ...addr,
+                    isDefault: addr._id === action.payload
+                }));
+                localStorage.setItem('user', JSON.stringify(state.user));
+            }
+        }
     },
     // extraReducers handle the three states of the async thunk
     extraReducers: (builder) => {
@@ -83,5 +120,5 @@ const authSlice = createSlice({
     },
 });
 
-export const { logout } = authSlice.actions;
+export const { logout, updateProfile, addAddress, updateAddress, deleteAddress, setDefaultAddress } = authSlice.actions;
 export default authSlice.reducer;

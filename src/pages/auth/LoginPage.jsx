@@ -1,32 +1,35 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import useAuth from '../../context/useAuth';
+import { useSelector, useDispatch } from 'react-redux';
+import { loginUser } from '../../store/authSlice';
+import { fetchCart } from '../../store/cartSlice';
 import Notification from '../../component/common/Notification';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [notification, setNotification] = useState(null);
-  const { login } = useAuth();
+  const dispatch = useDispatch();
+  const { loading } = useSelector((state) => state.auth);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) {
       setNotification({ message: 'Please fill in all fields', type: 'error' });
       return;
     }
 
-    // Simulated: accept any email/password
-    const nameFromEmail = email.split('@')[0];
-    const formattedName = nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1);
-    
-    login({ name: formattedName, email });
-    setNotification({ message: 'Logged in successfully!', type: 'success' });
-
-    setTimeout(() => {
-      navigate('/');
-    }, 1000);
+    const result = await dispatch(loginUser({ email, password }));
+    if (loginUser.fulfilled.match(result)) {
+      dispatch(fetchCart());
+      setNotification({ message: 'Logged in successfully!', type: 'success' });
+      setTimeout(() => {
+        navigate('/');
+      }, 1000);
+    } else {
+      setNotification({ message: result.payload || 'Login failed', type: 'error' });
+    }
   };
 
   return (

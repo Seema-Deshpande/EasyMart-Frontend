@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import useAuth from '../../context/useAuth';
+import { useSelector, useDispatch } from 'react-redux';
+import { registerUser } from '../../store/authSlice';
+import { fetchCart } from '../../store/cartSlice';
 import Notification from '../../component/common/Notification';
 
 const RegisterPage = () => {
@@ -11,14 +13,15 @@ const RegisterPage = () => {
     confirmPassword: ''
   });
   const [notification, setNotification] = useState(null);
-  const { login, loading } = useAuth();
+  const dispatch = useDispatch();
+  const { loading } = useSelector((state) => state.auth);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const { name, email, password, confirmPassword } = formData;
 
@@ -32,15 +35,16 @@ const RegisterPage = () => {
       return;
     }
 
-    // Determine role based on email as per requirements
-    const role = email === 'admin@easymart.com' ? 'admin' : 'user';
-
-    login({ email, name, role });
-    setNotification({ message: 'Account created and logged in!', type: 'success' });
-    
-    setTimeout(() => {
-      navigate('/');
-    }, 1500);
+    const result = await dispatch(registerUser({ name, email, password }));
+    if (registerUser.fulfilled.match(result)) {
+      dispatch(fetchCart());
+      setNotification({ message: 'Account created successfully!', type: 'success' });
+      setTimeout(() => {
+        navigate('/');
+      }, 1500);
+    } else {
+      setNotification({ message: result.payload || 'Registration failed', type: 'error' });
+    }
   };
 
   return (

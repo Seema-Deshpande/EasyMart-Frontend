@@ -1,14 +1,50 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { adminGetUsers, adminUpdateUserRole, adminDeleteUser } from '../../service/adminService';
 
 const AdminUsersPage = () => {
-    // TODO: Fetch users from API (e.g., GET /api/users)
-    const [users] = useState([
-        { id: 1, name: 'Alice Smith', email: 'alice@example.com', role: 'user', joined: '2024-01-15', avatar: 'AS' },
-        { id: 2, name: 'Admin User', email: 'admin@easymart.com', role: 'admin', joined: '2023-12-01', avatar: 'AU' },
-        { id: 3, name: 'Bob Johnson', email: 'bob@example.com', role: 'user', joined: '2024-02-10', avatar: 'BJ' },
-        { id: 4, name: 'Charlie Brown', email: 'charlie@example.com', role: 'user', joined: '2024-03-05', avatar: 'CB' },
-        { id: 5, name: 'Diana Prince', email: 'diana@example.com', role: 'user', joined: '2024-04-12', avatar: 'DP' }
-    ]);
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        fetchUsers();
+    }, []);
+
+    const fetchUsers = async () => {
+        try {
+            setLoading(true);
+            const data = await adminGetUsers();
+            setUsers(data);
+            setError(null);
+        } catch (err) {
+            setError('Failed to fetch users');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleRoleUpdate = async (userId, newRole) => {
+        try {
+            await adminUpdateUserRole(userId, newRole);
+            setUsers(users.map(u => u._id === userId ? { ...u, role: newRole } : u));
+        } catch (err) {
+            alert('Failed to update user role');
+        }
+    };
+
+    const handleDeleteUser = async (userId) => {
+        if (window.confirm('Are you sure you want to delete this user?')) {
+            try {
+                await adminDeleteUser(userId);
+                setUsers(users.filter(u => u._id !== userId));
+            } catch (err) {
+                alert('Failed to delete user');
+            }
+        }
+    };
+
+    if (loading) return <div>Loading users...</div>;
+    if (error) return <div className="text-danger">{error}</div>;
 
     return (
         <div>
@@ -32,11 +68,11 @@ const AdminUsersPage = () => {
                             </thead>
                             <tbody>
                                 {users.map(user => (
-                                    <tr key={user.id}>
+                                    <tr key={user._id || user.id}>
                                         <td className="px-4 py-3">
                                             <div className="d-flex align-items-center">
                                                 <div className={`rounded-circle d-flex align-items-center justify-content-center me-3 fw-bold text-white shadow-sm ${user.role === 'admin' ? 'bg-danger' : 'bg-primary'}`} style={{ width: '38px', height: '38px', fontSize: '0.85rem' }}>
-                                                    {user.avatar}
+                                                    {user.name?.charAt(0) || 'U'}
                                                 </div>
                                                 <span className="fw-bold text-dark">{user.name}</span>
                                             </div>
@@ -46,25 +82,39 @@ const AdminUsersPage = () => {
                                         </td>
                                         <td>
                                             <span className={`badge rounded-pill px-3 py-2 ${user.role === 'admin' ? 'bg-danger bg-opacity-10 text-danger' : 'bg-primary bg-opacity-10 text-primary'}`} style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>
-                                                {user.role.toUpperCase()}
+                                                {user.role?.toUpperCase()}
                                             </span>
                                         </td>
                                         <td>
-                                            <span className="text-secondary small">
-                                                <i className="bi bi-calendar3 me-2"></i>
-                                                {new Date(user.joined).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                                            <span className="text-muted small">
+                                                {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                                             </span>
                                         </td>
                                         <td className="text-end px-4">
-                                            <button className="btn btn-sm btn-outline-info me-2 shadow-sm" title="View Details">
-                                                <i className="bi bi-eye"></i>
-                                            </button>
-                                            <button 
-                                                className={`btn btn-sm shadow-sm ${user.role === 'admin' ? 'btn-light disabled' : 'btn-outline-danger'}`} 
-                                                title={user.role === 'admin' ? 'Cannot disable admin' : 'Disable User'}
-                                            >
-                                                <i className="bi bi-slash-circle"></i>
-                                            </button>
+                                            <div className="dropdown">
+                                                <button className="btn btn-sm btn-light border" type="button" data-bs-toggle="dropdown">
+                                                    Manage
+                                                </button>
+                                                <ul className="dropdown-menu dropdown-menu-end shadow-sm">
+                                                    <li>
+                                                        <button 
+                                                            className="dropdown-item" 
+                                                            onClick={() => handleRoleUpdate(user._id || user.id, user.role === 'admin' ? 'user' : 'admin')}
+                                                        >
+                                                            Switch to {user.role === 'admin' ? 'User' : 'Admin'}
+                                                        </button>
+                                                    </li>
+                                                    <li><hr className="dropdown-divider" /></li>
+                                                    <li>
+                                                        <button 
+                                                            className="dropdown-item text-danger" 
+                                                            onClick={() => handleDeleteUser(user._id || user.id)}
+                                                        >
+                                                            Delete User
+                                                        </button>
+                                                    </li>
+                                                </ul>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -72,13 +122,6 @@ const AdminUsersPage = () => {
                         </table>
                     </div>
                 </div>
-            </div>
-            
-            <div className="mt-4 p-3 bg-light rounded-3 border">
-                <p className="mb-0 small text-muted text-center">
-                    <i className="bi bi-info-circle me-2"></i>
-                    Admin users cannot be disabled via the dashboard for security purposes.
-                </p>
             </div>
         </div>
     );

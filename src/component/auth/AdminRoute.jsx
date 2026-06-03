@@ -1,8 +1,8 @@
 import { Navigate } from 'react-router-dom';
-import useAuth from '../../context/useAuth';
+import { useSelector } from 'react-redux';
 
 const AdminRoute = ({ children }) => {
-  const { isLoggedIn, user } = useAuth();
+  const { isLoggedIn, user } = useSelector((state) => state.auth);
 
   if (!isLoggedIn) {
     return <Navigate to="/login" replace />;

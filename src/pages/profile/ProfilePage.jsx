@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import useAuth from '../../context/useAuth';
+import { useSelector, useDispatch } from 'react-redux';
+import { updateProfile } from '../../store/authSlice';
 import Notification from '../../component/common/Notification';
 
 const ProfilePage = () => {
-  const { user, updateProfile } = useAuth();
+  const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: user?.name || '',
@@ -19,7 +21,7 @@ const ProfilePage = () => {
 
   const handleUpdate = (e) => {
     e.preventDefault();
-    updateProfile({ name: formData.name, phone: formData.phone });
+    dispatch(updateProfile({ name: formData.name, phone: formData.phone }));
     setIsEditing(false);
     showNotification('Profile updated successfully!', 'success');
   };

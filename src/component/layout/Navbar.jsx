@@ -1,14 +1,16 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import useAuth from '../../context/useAuth';
-import useCart from '../../context/useCart';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../../store/authSlice';
 
 const Navbar = () => {
-  const { user, logout } = useAuth();
-  const { totalItems } = useCart();
+  const { user } = useSelector((state) => state.auth);
+  const { items } = useSelector((state) => state.cart);
+  const totalItems = items.reduce((sum, i) => sum + (i.quantity || 1), 0);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout();
+    dispatch(logout());
     navigate('/');
   };
 

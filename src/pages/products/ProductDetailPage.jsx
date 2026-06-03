@@ -1,21 +1,25 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useState, useMemo } from 'react';
-import useCart from '../../context/useCart';
-import useAuth from '../../context/useAuth';
+import { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { addToCart } from '../../store/cartSlice';
+import { fetchProductById, clearSelectedProduct } from '../../store/productSlice';
 import Notification from '../../component/common/Notification';
-import { MOCK_PRODUCTS } from '../../data/products';
 import './ProductDetailPage.css';
 
 const ProductDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { addItem } = useCart();
-  const { user } = useAuth();
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
+  const { selectedProduct: product, loading, error } = useSelector((state) => state.products);
   const [notification, setNotification] = useState(null);
 
-  const product = useMemo(() => {
-    return MOCK_PRODUCTS.find(p => String(p._id || p.id) === id);
-  }, [id]);
+  useEffect(() => {
+    dispatch(fetchProductById(id));
+    return () => {
+      dispatch(clearSelectedProduct());
+    };
+  }, [dispatch, id]);
 
   const showNotification = (message, type) => {
     setNotification({ message, type });
@@ -27,11 +31,13 @@ const ProductDetailPage = () => {
       showNotification('Please log in to add items to your cart', 'error');
       return;
     }
-    addItem(product);
+    dispatch(addToCart({ productId: product._id || product.id, quantity: 1 }));
     showNotification(`${product.name} added to cart!`, 'success');
   };
 
-  if (!product) return <div className="container py-5 text-center">Loading...</div>;
+  if (loading) return <div className="container py-5 text-center">Loading...</div>;
+  if (error) return <div className="container py-5 text-center text-danger">{error}</div>;
+  if (!product) return <div className="container py-5 text-center">Product not found</div>;
 
   return (
     <div className="product-detail-page container py-5">

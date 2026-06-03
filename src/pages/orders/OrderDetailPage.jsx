@@ -1,11 +1,28 @@
+import { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import useOrder from '../../context/useOrder';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchOrderById, cancelOrder, clearCurrentOrder } from '../../store/ordersSlice';
 
 const OrderDetailPage = () => {
   const { id } = useParams();
-  const { getOrderById, cancelOrder } = useOrder();
+  const dispatch = useDispatch();
+  const { currentOrder: order, loading, error } = useSelector((state) => state.orders);
 
-  const order = getOrderById(id);
+  useEffect(() => {
+    dispatch(fetchOrderById(id));
+    return () => {
+      dispatch(clearCurrentOrder());
+    };
+  }, [dispatch, id]);
+
+  const handleCancel = () => {
+    if (window.confirm('Are you sure you want to cancel this order?')) {
+      dispatch(cancelOrder(id));
+    }
+  };
+
+  if (loading) return <div className="container py-5 text-center">Loading order details...</div>;
+  if (error) return <div className="container py-5 text-center text-danger">{error}</div>;
 
   if (!order) {
     return (
@@ -32,7 +49,7 @@ const OrderDetailPage = () => {
           {order.status === 'Pending' && (
             <button 
               className="btn btn-outline-danger" 
-              onClick={() => cancelOrder(order._id)}
+              onClick={handleCancel}
             >
               Cancel Order
             </button>

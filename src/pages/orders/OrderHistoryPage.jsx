@@ -1,10 +1,23 @@
+import { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import useOrder from '../../context/useOrder';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchMyOrders, cancelOrder } from '../../store/ordersSlice';
 import './OrderHistoryPage.css';
 
 const OrderHistoryPage = () => {
-  const { orders, cancelOrder } = useOrder();
+  const dispatch = useDispatch();
+  const { orders, loading, error } = useSelector((state) => state.orders);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    dispatch(fetchMyOrders());
+  }, [dispatch]);
+
+  const handleCancelOrder = async (id) => {
+    if (window.confirm('Are you sure you want to cancel this order?')) {
+      dispatch(cancelOrder(id));
+    }
+  };
 
   const getStatusBadgeClass = (status) => {
     switch (status.toLowerCase()) {
@@ -15,6 +28,9 @@ const OrderHistoryPage = () => {
       default: return 'bg-secondary';
     }
   };
+
+  if (loading) return <div className="container py-5 text-center">Loading orders...</div>;
+  if (error) return <div className="container py-5 text-center text-danger">{error}</div>;
 
   if (orders.length === 0) {
     return (
@@ -64,7 +80,7 @@ const OrderHistoryPage = () => {
                     {order.status === 'Pending' && (
                         <button 
                           className="btn btn-sm btn-outline-danger" 
-                          onClick={() => cancelOrder(order._id)}
+                          onClick={() => handleCancelOrder(order._id)}
                         >
                           Cancel Order
                         </button>
