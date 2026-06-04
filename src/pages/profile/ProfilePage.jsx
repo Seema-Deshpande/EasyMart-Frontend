@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { updateProfile } from '../../store/authSlice';
+import { updateProfile as updateProfileState } from '../../store/authSlice';
+import * as userService from '../../service/userService';
 import Notification from '../../component/common/Notification';
 
 const ProfilePage = () => {
@@ -19,11 +20,19 @@ const ProfilePage = () => {
     setTimeout(() => setNotification(null), 3000);
   };
 
-  const handleUpdate = (e) => {
+  const handleUpdate = async (e) => {
     e.preventDefault();
-    dispatch(updateProfile({ name: formData.name, phone: formData.phone }));
-    setIsEditing(false);
-    showNotification('Profile updated successfully!', 'success');
+    try {
+      const updatedUser = await userService.updateProfile({ 
+        name: formData.name, 
+        phone: formData.phone 
+      });
+      dispatch(updateProfileState(updatedUser));
+      setIsEditing(false);
+      showNotification('Profile updated successfully!', 'success');
+    } catch (err) {
+      showNotification(err.response?.data?.message || 'Failed to update profile', 'error');
+    }
   };
 
   return (
@@ -62,6 +71,11 @@ const ProfilePage = () => {
                 <div className="mb-3">
                   <label className="form-label text-muted small fw-bold text-uppercase">Email Address</label>
                   <input type="email" className="form-control-plaintext fw-bold" value={user?.email} readOnly />
+                </div>
+
+                <div className="mb-3">
+                  <label className="form-label text-muted small fw-bold text-uppercase">Role</label>
+                  <p className="fw-bold mb-0 text-capitalize">{user?.role}</p>
                 </div>
 
                 <div className="mb-3">

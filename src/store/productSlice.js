@@ -49,13 +49,15 @@ const productSlice = createSlice({
             })
             .addCase(fetchProducts.fulfilled, (state, action) => {
                 state.loading = false;
-                state.items = action.payload.products || action.payload; // adjustment based on common API response structures
-                // If API returns pagination info, map it here
-                if (action.payload.pagination) {
-                    state.pagination = action.payload.pagination;
-                } else {
-                    state.pagination.totalProducts = (action.payload.products || action.payload).length;
-                }
+                // action.payload is now res.data from service
+                state.items = action.payload.data || [];
+                
+                // Set pagination info
+                state.pagination = {
+                    currentPage: action.payload.page || 1,
+                    totalPages: action.payload.pages || 1,
+                    totalProducts: action.payload.total || (action.payload.data ? action.payload.data.length : 0)
+                };
             })
             .addCase(fetchProducts.rejected, (state, action) => {
                 state.loading = false;

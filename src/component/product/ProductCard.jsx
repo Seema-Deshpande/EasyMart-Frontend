@@ -1,21 +1,20 @@
 import './ProductCard.css';
+import { getProductImage, generatePlaceholderImage } from '../../utils/imageHelper';
 
 const ProductCard = ({ product, onSelect, onQuickView }) => {
   const {
     name,
     price,
-    images,
-    image,
     stock,
     rating,
     numReviews
   } = product;
 
-  // Prefer 'image' if exists, else first of 'images' array, else placeholder
-  const displayImage = image || (images && images.length > 0 ? images[0] : 'https://via.placeholder.com/300x300?text=Product+Image');
+  // Get best available image with fallback
+  const displayImage = getProductImage(product);
 
   const handleImageError = (e) => {
-    e.target.src = 'https://via.placeholder.com/300x300?text=Product+Image';
+    e.target.src = generatePlaceholderImage(name || 'Product Image');
   };
 
   const isInStock = stock > 0;

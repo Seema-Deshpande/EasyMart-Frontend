@@ -1,15 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { clearCart } from '../../store/cartSlice';
+import { clearCart as clearCartAPI } from '../../store/cartSlice';
 import { placeOrder } from '../../store/ordersSlice';
 import Notification from '../../component/common/Notification';
-import { PAYMENT_METHODS } from '../../utils/ constant';
+
+const PAYMENT_METHODS = [
+  { value: 'Credit Card', label: 'Credit Card' },
+  { value: 'Debit Card', label: 'Debit Card' },
+  { value: 'PayPal', label: 'PayPal' },
+  { value: 'Cash on Delivery', label: 'Cash on Delivery' }
+];
 
 const CheckoutPage = () => {
   const [step, setStep] = useState(1);
   const dispatch = useDispatch();
-  const { items: cartItems, totalPrice } = useSelector((state) => state.cart);
+  const { items: cartItems = [], totalPrice = 0 } = useSelector((state) => state.cart || {});
   const { user } = useSelector((state) => state.auth);
   const { loading, error } = useSelector((state) => state.orders);
   const navigate = useNavigate();
@@ -17,7 +23,7 @@ const CheckoutPage = () => {
 
   const [shippingData, setShippingData] = useState({
     fullName: user?.name || '',
-    address: '',
+    street: '',
     city: '',
     state: '',
     zipCode: '',
@@ -25,7 +31,7 @@ const CheckoutPage = () => {
   });
 
   const [paymentData, setPaymentData] = useState({
-    paymentMethod: 'credit-card',
+    paymentMethod: 'Credit Card',
     cardName: '',
     cardNumber: '',
     expiry: '',
@@ -34,7 +40,7 @@ const CheckoutPage = () => {
 
   const subtotal = totalPrice;
   const tax = subtotal * 0.10;
-  const shipping_fee = subtotal > 100 ? 0 : 15;
+  const shipping_fee = subtotal > 100 ? 0 : 5.99;
   const total = subtotal + tax + shipping_fee;
 
   const showNotification = (message, type) => {
@@ -44,15 +50,17 @@ const CheckoutPage = () => {
 
   const handleNext = () => {
     if (step === 1) {
-      if (!shippingData.fullName || !shippingData.address || !shippingData.city || !shippingData.state || !shippingData.zipCode || !shippingData.country) {
+      if (!shippingData.fullName || !shippingData.street || !shippingData.city || !shippingData.state || !shippingData.zipCode || !shippingData.country) {
         showNotification('Please fill all shipping fields', 'error');
         return;
       }
     }
     if (step === 2) {
-      if (!paymentData.cardName || !paymentData.cardNumber || !paymentData.expiry || !paymentData.cvv) {
-        showNotification('Please fill all payment fields', 'error');
-        return;
+      if (paymentData.paymentMethod !== 'Cash on Delivery') {
+        if (!paymentData.cardName || !paymentData.cardNumber || !paymentData.expiry || !paymentData.cvv) {
+          showNotification('Please fill all payment fields', 'error');
+          return;
+        }
       }
     }
     setStep(prev => prev + 1);
@@ -63,7 +71,7 @@ const CheckoutPage = () => {
   const handleQuickFill = (addr) => {
     setShippingData({
       fullName: user?.name || '',
-      address: addr.address,
+      street: addr.address || addr.street,
       city: addr.city,
       state: addr.state,
       zipCode: addr.zipCode,
@@ -82,8 +90,8 @@ const CheckoutPage = () => {
     if (placeOrder.fulfilled.match(result)) {
       showNotification('Order placed successfully! Redirecting...', 'success');
       const newOrder = result.payload;
+      dispatch(clearCartAPI());
       setTimeout(() => {
-        dispatch(clearCart());
         navigate(`/orders/${newOrder._id}`);
       }, 1500);
     } else {
@@ -134,7 +142,7 @@ const CheckoutPage = () => {
                           {user.addresses.map((addr) => (
                             <li key={addr._id}>
                               <button className="dropdown-item" onClick={() => handleQuickFill(addr)}>
-                                {addr.address}, {addr.city}
+                                {addr.street || addr.address}, {addr.city}
                               </button>
                             </li>
                           ))}
@@ -149,7 +157,7 @@ const CheckoutPage = () => {
                     </div>
                     <div className="col-12">
                       <label className="form-label">Address</label>
-                      <input type="text" className="form-control" value={shippingData.address} onChange={e => setShippingData({...shippingData, address: e.target.value})} placeholder="123 Main St" />
+                      <input type="text" className="form-control" value={shippingData.street} onChange={e => setShippingData({...shippingData, street: e.target.value})} placeholder="123 Main St" />
                     </div>
                     <div className="col-md-6">
                       <label className="form-label">City</label>
@@ -178,28 +186,45 @@ const CheckoutPage = () => {
                   <div className="row g-3">
                     <div className="col-12">
                       <label className="form-label">Payment Method</label>
-                      <select className="form-select" value={paymentData.paymentMethod} onChange={e => setPaymentData({...paymentData, paymentMethod: e.target.value})}>
+                      <div className="d-flex flex-column gap-2 mt-2">
                         {PAYMENT_METHODS.map(method => (
-                          <option key={method.value} value={method.value}>{method.label}</option>
+                          <div key={method.value} className="form-check p-3 border rounded-3">
+                            <input
+                              className="form-check-input ms-0"
+                              type="radio"
+                              name="paymentMethod"
+                              id={method.value}
+                              value={method.value}
+                              checked={paymentData.paymentMethod === method.value}
+                              onChange={e => setPaymentData({...paymentData, paymentMethod: e.target.value})}
+                            />
+                            <label className="form-check-label ms-4 w-100" htmlFor={method.value}>
+                              {method.label}
+                            </label>
+                          </div>
                         ))}
-                      </select>
+                      </div>
                     </div>
-                    <div className="col-12">
-                      <label className="form-label">Name on Card</label>
-                      <input type="text" className="form-control" value={paymentData.cardName} onChange={e => setPaymentData({...paymentData, cardName: e.target.value})} placeholder="John Doe" />
-                    </div>
-                    <div className="col-12">
-                      <label className="form-label">Card Number</label>
-                      <input type="text" className="form-control" placeholder="0000 0000 0000 0000" value={paymentData.cardNumber} onChange={e => setPaymentData({...paymentData, cardNumber: e.target.value})} />
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label">Expiry Date</label>
-                      <input type="text" className="form-control" placeholder="MM/YY" value={paymentData.expiry} onChange={e => setPaymentData({...paymentData, expiry: e.target.value})} />
-                    </div>
-                    <div className="col-md-6">
-                      <label className="form-label">CVV</label>
-                      <input type="text" className="form-control" placeholder="000" value={paymentData.cvv} onChange={e => setPaymentData({...paymentData, cvv: e.target.value})} />
-                    </div>
+                    {paymentData.paymentMethod !== 'Cash on Delivery' && (
+                      <>
+                        <div className="col-12">
+                          <label className="form-label">Name on Card</label>
+                          <input type="text" className="form-control" value={paymentData.cardName} onChange={e => setPaymentData({...paymentData, cardName: e.target.value})} placeholder="John Doe" />
+                        </div>
+                        <div className="col-12">
+                          <label className="form-label">Card Number</label>
+                          <input type="text" className="form-control" placeholder="0000 0000 0000 0000" value={paymentData.cardNumber} onChange={e => setPaymentData({...paymentData, cardNumber: e.target.value})} />
+                        </div>
+                        <div className="col-md-6">
+                          <label className="form-label">Expiry Date</label>
+                          <input type="text" className="form-control" placeholder="MM/YY" value={paymentData.expiry} onChange={e => setPaymentData({...paymentData, expiry: e.target.value})} />
+                        </div>
+                        <div className="col-md-6">
+                          <label className="form-label">CVV</label>
+                          <input type="text" className="form-control" placeholder="000" value={paymentData.cvv} onChange={e => setPaymentData({...paymentData, cvv: e.target.value})} />
+                        </div>
+                      </>
+                    )}
                   </div>
                   <div className="d-flex gap-2 mt-4">
                     <button className="btn btn-outline-secondary flex-grow-1 py-3 fw-bold" onClick={handleBack}>Back</button>
@@ -217,7 +242,7 @@ const CheckoutPage = () => {
                       <h6 className="fw-bold text-muted text-uppercase small mb-2">Shipping to:</h6>
                       <p className="mb-0 small text-muted">
                         {shippingData.fullName}<br />
-                        {shippingData.address}<br />
+                        {shippingData.street}<br />
                         {shippingData.city}, {shippingData.state} {shippingData.zipCode}<br />
                         {shippingData.country}
                       </p>
@@ -225,8 +250,8 @@ const CheckoutPage = () => {
                     <div className="col-md-6">
                       <h6 className="fw-bold text-muted text-uppercase small mb-2">Payment:</h6>
                       <p className="mb-0 small text-muted">
-                        {PAYMENT_METHODS.find(m => m.value === paymentData.paymentMethod)?.label}<br />
-                        Card ending in {paymentData.cardNumber.slice(-4) || '****'}
+                        {paymentData.paymentMethod}<br />
+                        {paymentData.paymentMethod !== 'Cash on Delivery' && `Card ending in ${paymentData.cardNumber.slice(-4) || '****'}`}
                       </p>
                     </div>
                   </div>

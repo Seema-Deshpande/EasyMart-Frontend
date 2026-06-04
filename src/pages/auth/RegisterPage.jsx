@@ -35,6 +35,11 @@ const RegisterPage = () => {
       return;
     }
 
+    if (password.length < 6) {
+      setNotification({ message: 'Password must be at least 6 characters', type: 'error' });
+      return;
+    }
+
     const result = await dispatch(registerUser({ name, email, password }));
     if (registerUser.fulfilled.match(result)) {
       dispatch(fetchCart());

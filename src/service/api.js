@@ -9,7 +9,10 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
-    if (token) {
+    // Do not send token for login or register requests to avoid 401 errors from backend if token is invalid/expired
+    const isAuthRoute = config.url.includes('/auth/login') || config.url.includes('/auth/register');
+    
+    if (token && !isAuthRoute) {
         config.headers.Authorization = `Bearer ${token}`;
     }
     return config;

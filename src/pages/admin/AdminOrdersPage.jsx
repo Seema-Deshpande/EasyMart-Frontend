@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { adminGetOrders, adminUpdateOrderStatus } from '../../service/adminService';
 import Notification from '../../component/common/Notification';
 
@@ -21,7 +22,9 @@ const AdminOrdersPage = () => {
             setOrders(data.orders || data);
             setError(null);
         } catch (err) {
-            setError('Failed to fetch orders');
+            console.error('Fetch orders error:', err);
+            setError(err.message || 'Failed to load orders');
+            setOrders([]);
         } finally {
             setLoading(false);
         }
@@ -106,45 +109,49 @@ const AdminOrdersPage = () => {
                                     <th>Date</th>
                                     <th>Total</th>
                                     <th>Status</th>
-                                    <th className="text-end px-4">Update Status</th>
+                                    <th className="text-end px-4">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {filteredOrders.map(order => (
                                     <tr key={order._id}>
                                         <td className="px-4 py-3">
-                                            <span className="fw-bold small text-muted">#{order._id}</span>
+                                            <span className="fw-bold small">{order._id}</span>
                                         </td>
                                         <td>
                                             <div className="fw-semibold text-dark">
-                                                {order.shippingAddress?.fullName || 'Guest User'}
+                                                {order.shippingAddress?.fullName || order.user?.name || 'Guest User'}
                                             </div>
                                             <small className="text-muted">{order.items?.length || 0} items</small>
                                         </td>
                                         <td>{new Date(order.createdAt).toLocaleDateString()}</td>
-                                        <td className="fw-bold text-primary">${(order.total || 0).toFixed(2)}</td>
+                                        <td className="fw-bold text-primary">${(order.totalAmount || order.total || 0).toFixed(2)}</td>
                                         <td>
                                             <span className={`badge rounded-pill px-3 py-2 ${
-                                                order.status === 'Delivered' ? 'bg-success text-white' : 
-                                                order.status === 'Shipped' ? 'bg-info text-white' : 
-                                                order.status === 'Cancelled' ? 'bg-danger text-white' : 
-                                                order.status === 'Processing' ? 'bg-primary text-white' :
+                                                order.status === 'Delivered' ? 'bg-success' : 
+                                                order.status === 'Shipped' ? 'bg-primary' : 
+                                                order.status === 'Cancelled' ? 'bg-secondary' : 
+                                                order.status === 'Processing' ? 'bg-info text-dark' :
                                                 'bg-warning text-dark'
                                             }`} style={{ fontSize: '0.75rem' }}>
                                                 {order.status || 'Pending'}
                                             </span>
                                         </td>
                                         <td className="text-end px-4">
-                                            <select 
-                                                className="form-select form-select-sm d-inline-block w-auto border-0 shadow-sm" 
-                                                style={{ backgroundColor: '#f8f9fa' }}
-                                                value={order.status || 'Pending'}
-                                                onChange={(e) => handleStatusChange(order._id, e.target.value)}
-                                            >
-                                                {statusOptions.map(status => (
-                                                    <option key={status} value={status}>{status}</option>
-                                                ))}
-                                            </select>
+                                            <div className="d-flex align-items-center justify-content-end gap-2">
+                                                <select 
+                                                    className="form-select form-select-sm w-auto shadow-sm"
+                                                    value={order.status || 'Pending'}
+                                                    onChange={(e) => handleStatusChange(order._id, e.target.value)}
+                                                >
+                                                    {statusOptions.map(status => (
+                                                        <option key={status} value={status}>{status}</option>
+                                                    ))}
+                                                </select>
+                                                <Link to={`/orders/${order._id}`} className="btn btn-sm btn-outline-dark">
+                                                    <i className="bi bi-eye"></i> View
+                                                </Link>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}

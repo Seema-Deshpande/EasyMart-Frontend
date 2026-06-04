@@ -2,17 +2,12 @@ import { Navigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 
 const AdminRoute = ({ children }) => {
-  const { isLoggedIn, user } = useSelector((state) => state.auth);
+    const { isLoggedIn, user } = useSelector((state) => state.auth);
 
-  if (!isLoggedIn) {
-    return <Navigate to="/login" replace />;
-  }
+    if (!isLoggedIn)            return <Navigate to="/login" replace />;
+    if (user?.role !== 'admin') return <Navigate to="/" replace />;
 
-  if (user?.role !== 'admin') {
-    return <Navigate to="/" replace />;
-  }
-
-  return children;
+    return children;
 };
 
 export default AdminRoute;

@@ -1,45 +1,78 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { addAddress, updateAddress, deleteAddress, setDefaultAddress } from '../../store/authSlice';
+import { updateProfile } from '../../store/authSlice';
+import * as userService from '../../service/userService';
 import Notification from '../../component/common/Notification';
 
 const AddressesPage = () => {
     const { user } = useSelector((state) => state.auth);
     const dispatch = useDispatch();
-    const addresses = user?.addresses || [];
+    const [addresses, setAddresses] = useState([]);
     const [isAdding, setIsAdding] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [notification, setNotification] = useState(null);
+    const [loading, setLoading] = useState(false);
     
     const [formData, setFormData] = useState({
         label: 'Home',
+        fullName: user?.name || '',
         street: '',
         city: '',
         state: '',
-        zip: '',
+        zipCode: '',
         country: '',
         isDefault: false
     });
+
+    const fetchAddresses = async () => {
+        try {
+            setLoading(true);
+            const data = await userService.getAddresses();
+            setAddresses(data || []);
+        } catch (err) {
+            showNotification('Failed to load addresses', 'error');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchAddresses();
+    }, []);
 
     const showNotification = (message, type) => {
         setNotification({ message, type });
         setTimeout(() => setNotification(null), 3000);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        if (editingId) {
-            dispatch(updateAddress({ id: editingId, updates: formData }));
-            showNotification('Address updated!', 'success');
-        } else {
-            dispatch(addAddress(formData));
-            showNotification('New address added!', 'success');
+        try {
+            if (editingId) {
+                await userService.updateAddress(editingId, formData);
+                showNotification('Address updated!', 'success');
+            } else {
+                await userService.addAddress(formData);
+                showNotification('New address added!', 'success');
+            }
+            fetchAddresses();
+            resetForm();
+        } catch (err) {
+            showNotification(err.response?.data?.message || 'Action failed', 'error');
         }
-        resetForm();
     };
 
     const resetForm = () => {
-        setFormData({ label: 'Home', street: '', city: '', state: '', zip: '', country: '', isDefault: false });
+        setFormData({ 
+            label: 'Home', 
+            fullName: user?.name || '',
+            street: '', 
+            city: '', 
+            state: '', 
+            zipCode: '', 
+            country: '', 
+            isDefault: false 
+        });
         setIsAdding(false);
         setEditingId(null);
     };
@@ -49,6 +82,28 @@ const AddressesPage = () => {
         setFormData(rest);
         setEditingId(_id);
         setIsAdding(true);
+    };
+
+    const handleDelete = async (id) => {
+        if (window.confirm('Are you sure you want to delete this address?')) {
+            try {
+                await userService.deleteAddress(id);
+                showNotification('Address deleted', 'success');
+                fetchAddresses();
+            } catch (err) {
+                showNotification('Failed to delete address', 'error');
+            }
+        }
+    };
+
+    const handleSetDefault = async (id) => {
+        try {
+            await userService.setDefaultAddress(id);
+            showNotification('Default address updated', 'success');
+            fetchAddresses();
+        } catch (err) {
+            showNotification('Failed to set default address', 'error');
+        }
     };
 
     return (
@@ -81,6 +136,10 @@ const AddressesPage = () => {
                                             </select>
                                         </div>
                                         <div className="col-md-6">
+                                            <label className="form-label">Full Name</label>
+                                            <input type="text" className="form-control" required value={formData.fullName} onChange={e => setFormData({...formData, fullName: e.target.value})} />
+                                        </div>
+                                        <div className="col-md-12">
                                             <label className="form-label">Street Address</label>
                                             <input type="text" className="form-control" required value={formData.street} onChange={e => setFormData({...formData, street: e.target.value})} />
                                         </div>
@@ -94,7 +153,7 @@ const AddressesPage = () => {
                                         </div>
                                         <div className="col-md-4">
                                             <label className="form-label">Zip Code</label>
-                                            <input type="text" className="form-control" required value={formData.zip} onChange={e => setFormData({...formData, zip: e.target.value})} />
+                                            <input type="text" className="form-control" required value={formData.zipCode} onChange={e => setFormData({...formData, zipCode: e.target.value})} />
                                         </div>
                                         <div className="col-md-12">
                                             <label className="form-label">Country</label>
@@ -137,15 +196,16 @@ const AddressesPage = () => {
                                             </button>
                                             <ul className="dropdown-menu dropdown-menu-end">
                                                 {!address.isDefault && (
-                                                    <li><button className="dropdown-item" onClick={() => dispatch(setDefaultAddress(address._id))}>Set as Default</button></li>
+                                                    <li><button className="dropdown-item" onClick={() => handleSetDefault(address._id)}>Set as Default</button></li>
                                                 )}
                                                 <li><button className="dropdown-item" onClick={() => handleEdit(address)}>Edit</button></li>
-                                                <li><button className="dropdown-item text-danger" onClick={() => dispatch(deleteAddress(address._id))}>Delete</button></li>
+                                                <li><button className="dropdown-item text-danger" onClick={() => handleDelete(address._id)}>Delete</button></li>
                                             </ul>
                                         </div>
                                     </div>
-                                    <h6 className="fw-bold mb-1">{address.street}</h6>
-                                    <p className="text-muted mb-0">{address.city}, {address.state} {address.zip}</p>
+                                    <h6 className="fw-bold mb-1">{address.fullName}</h6>
+                                    <p className="text-muted mb-0">{address.street}</p>
+                                    <p className="text-muted mb-0">{address.city}, {address.state} {address.zipCode}</p>
                                     <p className="text-muted mb-0">{address.country}</p>
                                 </div>
                             </div>

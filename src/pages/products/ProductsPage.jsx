@@ -54,16 +54,5 @@ const ProductsPage = () => {
     />
   );
 };
-      sortBy={sortBy}
-      setSortBy={setSortBy}
-      minPrice={minPrice}
-      setMinPrice={setMinPrice}
-      maxPrice={maxPrice}
-      setMaxPrice={setMaxPrice}
-      inStockOnly={inStockOnly}
-      setInStockOnly={setInStockOnly}
-    />
-  );
-};
 
 export default ProductsPage;

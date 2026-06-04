@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { adminGetProducts, adminCreateProduct, adminUpdateProduct, adminDeleteProduct } from '../../service/adminService';
 import Notification from '../../component/common/Notification';
+import { getProductImage, generatePlaceholderImage } from '../../utils/imageHelper';
 
 const AdminProductsPage = () => {
     const [products, setProducts] = useState([]);
@@ -26,7 +27,9 @@ const AdminProductsPage = () => {
             setProducts(data.products || data);
             setError(null);
         } catch (err) {
-            setError('Failed to fetch products');
+            console.error('Fetch products error:', err);
+            setError(err.message || 'Failed to load products');
+            setProducts([]);
         } finally {
             setLoading(false);
         }
@@ -73,45 +76,27 @@ const AdminProductsPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
+            const productToSend = {
+                ...formData,
+                price: parseFloat(formData.price),
+                stock: parseInt(formData.stock)
+            };
+
             if (editingProduct) {
-                const updated = await adminUpdateProduct(editingProduct._id || editingProduct.id, formData);
+                const updated = await adminUpdateProduct(editingProduct._id || editingProduct.id, productToSend);
                 setProducts(products.map(p => (p._id || p.id) === (updated._id || updated.id) ? updated : p));
                 showNotification('Product updated successfully', 'success');
             } else {
-                const created = await adminCreateProduct(formData);
+                const created = await adminCreateProduct(productToSend);
                 setProducts([created, ...products]);
                 showNotification('Product created successfully', 'success');
             }
             setIsModalOpen(false);
             setEditingProduct(null);
+            setFormData({ name: '', category: '', price: '', stock: '', description: '', isFeatured: false });
         } catch (err) {
             showNotification(err.response?.data?.message || 'Operation failed', 'error');
         }
-    };
-        e.preventDefault();
-        // TODO: Call POST/PUT API
-        if (editingProduct) {
-            setProducts(products.map(p => 
-                (p._id || p.id) === (editingProduct._id || editingProduct.id) 
-                ? { ...p, ...formData, price: parseFloat(formData.price), stock: parseInt(formData.stock) } 
-                : p
-            ));
-            showNotification('Product updated successfully', 'success');
-        } else {
-            const newProduct = {
-                ...formData,
-                _id: Date.now().toString(),
-                price: parseFloat(formData.price),
-                stock: parseInt(formData.stock),
-                rating: 0,
-                numReviews: 0
-            };
-            setProducts([newProduct, ...products]);
-            showNotification('Product added successfully', 'success');
-        }
-        setIsModalOpen(false);
-        setEditingProduct(null);
-        setFormData({ name: '', category: '', price: '', stock: '', description: '', isFeatured: false });
     };
 
     return (
@@ -178,11 +163,11 @@ const AdminProductsPage = () => {
                                         <td className="px-4 py-3">
                                             <div className="d-flex align-items-center">
                                                 <img 
-                                                  src={(product.images && product.images[0]) || product.image || 'https://via.placeholder.com/40'} 
+                                                  src={getProductImage(product)} 
                                                   alt="" 
                                                   className="rounded me-3" 
                                                   style={{ width: '40px', height: '40px', objectFit: 'cover' }} 
-                                                  onError={(e) => e.target.src = 'https://via.placeholder.com/40?text=P'}
+                                                  onError={(e) => e.target.src = generatePlaceholderImage(product.name || 'P', 40, 40)}
                                                 />
                                                 <div>
                                                     <span className="fw-bold d-block">{product.name}</span>

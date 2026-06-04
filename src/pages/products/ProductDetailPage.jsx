@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { addToCart } from '../../store/cartSlice';
 import { fetchProductById, clearSelectedProduct } from '../../store/productSlice';
 import Notification from '../../component/common/Notification';
+import { getProductImage, generatePlaceholderImage } from '../../utils/imageHelper';
 import './ProductDetailPage.css';
 
 const ProductDetailPage = () => {
@@ -15,7 +16,14 @@ const ProductDetailPage = () => {
   const [notification, setNotification] = useState(null);
 
   useEffect(() => {
-    dispatch(fetchProductById(id));
+    // Only fetch if ID looks like a valid MongoDB ObjectId (24 chars hex)
+    // This prevents 400 errors from stale mock data IDs like "1", "2", etc.
+    const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(id);
+    
+    if (isValidObjectId) {
+      dispatch(fetchProductById(id));
+    }
+    
     return () => {
       dispatch(clearSelectedProduct());
     };
@@ -26,13 +34,17 @@ const ProductDetailPage = () => {
     setTimeout(() => setNotification(null), 3000);
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!user) {
       showNotification('Please log in to add items to your cart', 'error');
       return;
     }
-    dispatch(addToCart({ productId: product._id || product.id, quantity: 1 }));
-    showNotification(`${product.name} added to cart!`, 'success');
+    const result = await dispatch(addToCart({ productId: product._id || product.id, quantity: 1 }));
+    if (addToCart.fulfilled.match(result)) {
+      showNotification(`${product.name} added to cart!`, 'success');
+    } else {
+      showNotification(result.payload || 'Failed to add to cart', 'error');
+    }
   };
 
   if (loading) return <div className="container py-5 text-center">Loading...</div>;
@@ -52,10 +64,10 @@ const ProductDetailPage = () => {
       <div className="row g-5">
         <div className="col-md-6">
           <img 
-            src={(product.images && product.images[0]) || product.image || 'https://via.placeholder.com/600x600?text=Product+Image'} 
+            src={getProductImage(product)} 
             alt={product.name} 
             className="img-fluid rounded shadow"
-            onError={(e) => e.target.src = 'https://via.placeholder.com/600x600?text=P'}
+            onError={(e) => e.target.src = generatePlaceholderImage(product.name || 'Product Image', 600, 600)}
           />
         </div>
         <div className="col-md-6">
@@ -70,10 +82,10 @@ const ProductDetailPage = () => {
           <h1 className="fw-bold mb-3">{product.name}</h1>
           <div className="d-flex align-items-center mb-4">
             <div className="text-warning me-2">
-              {'★'.repeat(Math.round(product.rating))}
-              <span className="text-muted opacity-50">{'★'.repeat(5 - Math.round(product.rating))}</span>
+              {'★'.repeat(Math.round(product.rating || 0))}
+              <span className="text-muted opacity-50">{'★'.repeat(5 - Math.round(product.rating || 0))}</span>
             </div>
-            <span className="text-muted">({product.reviews || 0} reviews)</span>
+            <span className="text-muted">({product.numReviews || 0} reviews)</span>
           </div>
           
           <h2 className="text-primary fw-bold mb-4">${product.price.toFixed(2)}</h2>

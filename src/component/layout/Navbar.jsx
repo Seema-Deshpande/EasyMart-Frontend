@@ -4,8 +4,10 @@ import { logout } from '../../store/authSlice';
 
 const Navbar = () => {
   const { user } = useSelector((state) => state.auth);
-  const { items } = useSelector((state) => state.cart);
-  const totalItems = items.reduce((sum, i) => sum + (i.quantity || 1), 0);
+  const { items = [] } = useSelector((state) => state.cart || {});
+  const totalItems = Array.isArray(items) 
+    ? items.reduce((sum, i) => sum + (i.quantity || 1), 0) 
+    : 0;
   const dispatch = useDispatch();
   const navigate = useNavigate();
 

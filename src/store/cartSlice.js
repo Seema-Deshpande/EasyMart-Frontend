@@ -74,8 +74,10 @@ const cartSlice = createSlice({
 
         const handleFulfilled = (state, action) => {
             state.loading = false;
-            state.items = action.payload.items;
-            state.totalPrice = action.payload.totalPrice;
+            // The backend returns { cart: { items: [], totalPrice: 0 } }
+            const cartData = action.payload?.cart || action.payload;
+            state.items = cartData?.items || [];
+            state.totalPrice = cartData?.totalPrice || 0;
         };
 
         const handleRejected = (state, action) => {

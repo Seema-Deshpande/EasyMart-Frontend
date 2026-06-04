@@ -24,16 +24,11 @@ const AdminLayout = () => {
                   to={item.path} 
                   end={item.path === '/admin'}
                   className={({ isActive }) => 
-                    `list-group-item list-group-item-action border-0 d-flex align-items-center px-4 py-3 transition ${isActive ? 'active shadow-sm' : 'text-dark'}`
+                    `list-group-item list-group-item-action border-0 d-flex align-items-center px-4 py-3 ${isActive ? 'active' : ''}`
                   }
-                  style={({ isActive }) => isActive ? { backgroundColor: '#007bff', borderRight: '4px solid #0056b3' } : {}}
                 >
-                  {({ isActive }) => (
-                    <>
-                      <i className={`bi ${item.icon} me-3 ${isActive ? 'text-white' : 'text-muted'}`}></i>
-                      <span className="fw-medium">{item.label}</span>
-                    </>
-                  )}
+                  <i className={`bi ${item.icon} me-3`}></i>
+                  <span className="fw-medium">{item.label}</span>
                 </NavLink>
               ))}
             </div>

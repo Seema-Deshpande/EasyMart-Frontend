@@ -1,17 +1,18 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { removeCartItem, updateCartItem } from '../../store/cartSlice';
+import { getProductImage, generatePlaceholderImage } from '../../utils/imageHelper';
 import './CartPage.css';
 
 const CartPage = () => {
   const dispatch = useDispatch();
-  const { items: cartItems, totalPrice } = useSelector((state) => state.cart);
+  const { items: cartItems = [], totalPrice = 0 } = useSelector((state) => state.cart || {});
   const navigate = useNavigate();
 
   const shipping = totalPrice > 100 ? 0 : 5.99;
   const total = totalPrice + shipping;
 
-  if (cartItems.length === 0) {
+  if (!Array.isArray(cartItems) || cartItems.length === 0) {
     return (
       <div className="container py-5 text-center">
         <div className="py-5">
@@ -48,11 +49,11 @@ const CartPage = () => {
                         <td className="px-4 py-3">
                           <div className="d-flex align-items-center">
                             <img 
-                              src={(item.images && item.images[0]) || item.image || 'https://via.placeholder.com/80x80?text=Product'} 
+                              src={getProductImage(item)} 
                               alt={item.name} 
-                              className="rounded me-3"
-                              style={{ width: '60px', height: '60px', objectFit: 'cover' }}
-                              onError={(e) => e.target.src = 'https://via.placeholder.com/80x80?text=P'}
+                              className="rounded me-3" 
+                              style={{ width: '80px', height: '80px', objectFit: 'cover' }} 
+                              onError={(e) => e.target.src = generatePlaceholderImage(item.name || 'Product', 80, 80)}
                             />
                             <div>
                                 <h6 className="mb-0 fw-bold">{item.name}</h6>

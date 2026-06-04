@@ -2,26 +2,21 @@ import api from './api';
 
 export const adminGetStats = async () => {
     const res = await api.get('/admin/stats');
+    return res.data; // KPIs: totalRevenue, totalOrders, totalProducts, totalUsers, recentOrders, lowStockProducts
+};
+
+export const adminGetProducts = async () => {
+    const res = await api.get('/products?limit=100');
     return res.data.data;
 };
 
-export const adminGetProducts = async (params) => {
-    const res = await api.get('/products', { params });
+export const adminCreateProduct = async (product) => {
+    const res = await api.post('/products', product);
     return res.data.data;
 };
 
-export const adminGetOrders = async (params) => {
-    const res = await api.get('/admin/orders', { params });
-    return res.data.data;
-};
-
-export const adminCreateProduct = async (productData) => {
-    const res = await api.post('/products', productData);
-    return res.data.data;
-};
-
-export const adminUpdateProduct = async (id, productData) => {
-    const res = await api.put(`/products/${id}`, productData);
+export const adminUpdateProduct = async (id, updates) => {
+    const res = await api.put(`/products/${id}`, updates);
     return res.data.data;
 };
 
@@ -30,8 +25,13 @@ export const adminDeleteProduct = async (id) => {
     return res.data.data;
 };
 
-export const adminUpdateOrderStatus = async (orderId, status) => {
-    const res = await api.put(`/admin/orders/${orderId}/status`, { status });
+export const adminGetOrders = async () => {
+    const res = await api.get('/admin/orders');
+    return res.data.data;
+};
+
+export const adminUpdateOrderStatus = async (id, status) => {
+    const res = await api.put(`/admin/orders/${id}/status`, { status });
     return res.data.data;
 };
 

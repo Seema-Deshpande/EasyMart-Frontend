@@ -1,23 +1,39 @@
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchProducts } from '../../store/productSlice';
 import ProductCard from '../../component/product/ProductCard';
-import { MOCK_PRODUCTS } from '../../data/products';
 import './HomePage.css';
 
 const HomePage = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { items: allProducts, loading } = useSelector((state) => state.products);
   
-  const featuredProducts = MOCK_PRODUCTS.filter(p => p.isFeatured).slice(0, 4);
-  const homeProducts = featuredProducts.length > 0 ? featuredProducts : MOCK_PRODUCTS.slice(0, 4);
+  useEffect(() => {
+    dispatch(fetchProducts({ isFeatured: true }));
+  }, [dispatch]);
+
+  const homeProducts = allProducts.length > 0 
+    ? allProducts.filter(p => p.isFeatured).slice(0, 4) 
+    : [];
+
+  // Fallback: If no featured products found in the filtered list, just show any 4 products
+  const productsToDisplay = homeProducts.length > 0 
+    ? homeProducts 
+    : allProducts.slice(0, 4);
 
   const handleSelectProduct = (product) => {
     navigate(`/products/${product._id || product.id}`);
   };
 
   const handleQuickView = (product) => {
-    // For now, navigating to detail is a safe fallback or we could trigger a modal if App.jsx still has it.
-    // The prompt implies more page-based navigation now.
     navigate(`/products/${product._id || product.id}`);
   };
+
+  if (loading && allProducts.length === 0) {
+    return <div className="container py-5 text-center">Loading featured products...</div>;
+  }
 
   return (
     <div className="home-page pb-5">
@@ -38,7 +54,7 @@ const HomePage = () => {
           <h2 className="fw-bold display-6">Featured Products</h2>
         </div>
         <div className="row row-cols-1 row-cols-sm-2 row-cols-md-4 g-4">
-          {homeProducts.map((product) => (
+          {productsToDisplay.map((product) => (
             <div className="col" key={product._id || product.id}>
               <ProductCard 
                 product={product} 

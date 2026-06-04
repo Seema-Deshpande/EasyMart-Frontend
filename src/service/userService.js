@@ -1,12 +1,12 @@
 import api from './api';
 
 export const getProfile = async () => {
-    const res = await api.get('/users/profile');
+    const res = await api.get('/auth/me');
     return res.data.data;
 };
 
 export const updateProfile = async (updates) => {
-    const res = await api.put('/users/profile', updates);
+    const res = await api.put('/auth/me', updates);
     return res.data.data;
 };
 

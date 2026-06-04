@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import * as orderService from '../service/orderService';
 
 export const fetchMyOrders = createAsyncThunk(
-    'orders/fetchMyOrders',
+    'orders/fetchMy',
     async (_, { rejectWithValue }) => {
         try {
             return await orderService.getMyOrders();

@@ -1,128 +1,119 @@
 import { useState, useEffect } from 'react';
-import { adminGetStats, adminGetOrders, adminGetProducts } from '../../service/adminService';
+import { useSelector } from 'react-redux';
+import { adminGetStats } from '../../service/adminService';
 
 const AdminDashboardPage = () => {
+    const { user } = useSelector((state) => state.auth);
     const [statsData, setStatsData] = useState(null);
-    const [orders, setOrders] = useState([]);
-    const [lowStockProducts, setLowStockProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchStats = async () => {
             try {
-                const [stats, ordersData, productsData] = await Promise.all([
-                    adminGetStats(),
-                    adminGetOrders({ limit: 10 }),
-                    adminGetProducts()
-                ]);
-                setStatsData(stats);
-                setOrders(ordersData.orders || ordersData);
-                
-                const products = productsData.products || productsData;
-                setLowStockProducts(products.filter(p => p.stock < 10));
+                const data = await adminGetStats();
+                setStatsData(data);
+                setError(null);
             } catch (err) {
-                setError('Failed to load dashboard data',err);
+                console.error('Dashboard stats error:', err);
+                setError(err.message || 'Failed to load dashboard stats');
             } finally {
                 setLoading(false);
             }
         };
-        fetchData();
+        fetchStats();
     }, []);
 
-    if (loading) return <div>Loading dashboard...</div>;
-    if (error) return <div className="text-danger">{error}</div>;
+    if (loading) return <div className="p-4 text-center">Loading dashboard...</div>;
+    if (error) return <div className="alert alert-danger m-4">{error}</div>;
 
-    const stats = [
+    const kpiCards = [
         { 
             label: 'Total Revenue', 
             value: `$${statsData?.totalRevenue?.toFixed(2) || '0.00'}`, 
-            icon: 'bi-briefcase-fill', 
-            bg: '#198754' 
+            icon: 'bi-currency-dollar', 
+            bg: 'bg-success' 
         },
         { 
             label: 'Total Orders', 
             value: statsData?.totalOrders || 0, 
-            icon: 'bi-receipt', 
-            bg: '#0d6efd' 
+            icon: 'bi-cart-check', 
+            bg: 'bg-primary' 
         },
         { 
             label: 'Total Products', 
             value: statsData?.totalProducts || 0, 
             icon: 'bi-box-seam', 
-            bg: '#ffc107' 
+            bg: 'bg-warning' 
         },
         { 
             label: 'Low Stock Items', 
-            value: statsData?.lowStockCount || 0, 
-            icon: 'bi-exclamation-triangle-fill', 
-            bg: '#dc3545' 
+            value: statsData?.lowStockProducts?.length || 0, 
+            icon: 'bi-exclamation-triangle', 
+            bg: 'bg-danger' 
         }
     ];
 
     return (
-        <div className="admin-dashboard-container">
-            <h3 className="fw-normal mb-4" style={{ letterSpacing: '-0.5px' }}>
-                Dashboard — <span className="text-muted fs-6">Welcome, admin</span>
-            </h3>
+        <div className="container-fluid p-4">
+            <h2 className="mb-4">Welcome, {user?.name}</h2>
             
             {/* KPI Cards */}
-            <div className="row g-3 mb-4">
-                {stats.map(stat => (
-                    <div key={stat.label} className="col-md-6 col-xl-3">
-                        <div className="card border-0 shadow-sm h-100 text-white text-center py-4 rounded-3" style={{ backgroundColor: stat.bg }}>
-                            <div className="card-body p-0 d-flex flex-column align-items-center justify-content-center">
-                                <i className={`bi ${stat.icon} fs-1 mb-2 d-block`}></i>
-                                <h2 className="fw-bold mb-0">{stat.value}</h2>
-                                <p className="mb-0 small opacity-75 fw-medium text-uppercase">{stat.label}</p>
+            <div className="row g-4 mb-4">
+                {kpiCards.map((card, index) => (
+                    <div key={index} className="col-md-6 col-lg-3">
+                        <div className={`card ${card.bg} text-white h-100 shadow-sm border-0`}>
+                            <div className="card-body d-flex align-items-center">
+                                <div className="fs-1 me-3">
+                                    <i className={`bi ${card.icon}`}></i>
+                                </div>
+                                <div>
+                                    <h3 className="mb-0 fw-bold">{card.value}</h3>
+                                    <p className="card-text mb-0 small opacity-75">{card.label}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 ))}
             </div>
 
-            <div className="row g-3">
+            <div className="row g-4">
                 {/* Recent Orders Table */}
                 <div className="col-lg-8">
-                    <div className="card border-0 shadow-sm">
-                        <div className="card-header bg-white border-bottom-0 pt-3 pb-0 ps-4">
-                            <h6 className="fw-bold text-dark">Recent Orders (last 10)</h6>
+                    <div className="card shadow-sm border-0 h-100">
+                        <div className="card-header bg-white py-3">
+                            <h5 className="mb-0 fw-bold">Recent Orders</h5>
                         </div>
-                        <div className="card-body px-0">
+                        <div className="card-body p-0">
                             <div className="table-responsive">
-                                <table className="table table-white align-middle mb-0">
-                                    <thead className="bg-light text-muted small text-uppercase">
+                                <table className="table table-hover align-middle mb-0">
+                                    <thead className="bg-light">
                                         <tr>
-                                            <th className="ps-4 fw-bold py-3" style={{ fontSize: '0.75rem' }}>Order ID</th>
-                                            <th className="fw-bold py-3" style={{ fontSize: '0.75rem' }}>Items</th>
-                                            <th className="fw-bold py-3" style={{ fontSize: '0.75rem' }}>Total</th>
-                                            <th className="pe-4 fw-bold py-3" style={{ fontSize: '0.75rem' }}>Status</th>
+                                            <th>Order ID</th>
+                                            <th>Customer</th>
+                                            <th>Total</th>
+                                            <th>Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {orders.length > 0 ? (
-                                            orders.slice(0, 10).map(order => (
-                                                <tr key={order._id}>
-                                                    <td className="ps-4 py-3"><span className="small text-muted">{order._id || order.id}</span></td>
-                                                    <td>{order.items?.length || 0}</td>
-                                                    <td className="py-3 text-dark fw-bold">${(order.total || 0).toFixed(2)}</td>
-                                                    <td className="pe-4 py-3">
-                                                        <span className="badge bg-secondary text-white px-3 py-2 rounded-2" style={{ fontSize: '0.65rem', fontWeight: 'bold' }}>
-                                                            {order.status || 'Pending'}
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            ))
-                                        ) : (
-                                            <tr>
-                                                <td className="ps-4 py-3"><span className="small text-muted">ORD-EXAMPLE-001</span></td>
-                                                <td>1</td>
-                                                <td className="py-3 text-dark fw-bold">$93.98</td>
-                                                <td className="pe-4 py-3">
-                                                    <span className="badge bg-secondary text-white px-3 py-2 rounded-2" style={{ fontSize: '0.65rem', fontWeight: 'bold' }}>
-                                                        Cancelled
+                                        {statsData?.recentOrders?.map(order => (
+                                            <tr key={order._id}>
+                                                <td className="small">{order._id}</td>
+                                                <td>{order.user?.name || 'Guest'}</td>
+                                                <td className="fw-bold">${order.totalAmount?.toFixed(2)}</td>
+                                                <td>
+                                                    <span className={`badge rounded-pill ${
+                                                        order.status === 'Delivered' ? 'bg-success' : 
+                                                        order.status === 'Processing' ? 'bg-primary' : 'bg-secondary'
+                                                    }`}>
+                                                        {order.status}
                                                     </span>
                                                 </td>
+                                            </tr>
+                                        ))}
+                                        {(!statsData?.recentOrders || statsData.recentOrders.length === 0) && (
+                                            <tr>
+                                                <td colSpan="4" className="text-center py-4 text-muted">No recent orders found.</td>
                                             </tr>
                                         )}
                                     </tbody>
@@ -134,25 +125,24 @@ const AdminDashboardPage = () => {
 
                 {/* Low Stock Alerts */}
                 <div className="col-lg-4">
-                    <div className="card border-0 shadow-sm">
-                        <div className="card-header bg-white border-bottom-0 pt-3 pb-0 ps-4 d-flex align-items-center">
-                            <i className="bi bi-exclamation-triangle-fill text-warning me-2"></i>
-                            <h6 className="fw-bold text-danger mb-0">Low Stock</h6>
+                    <div className="card shadow-sm border-0 h-100">
+                        <div className="card-header bg-white py-3">
+                            <h5 className="mb-0 fw-bold">Low Stock Alerts</h5>
                         </div>
                         <div className="card-body">
-                            {lowStockProducts.length === 0 ? (
-                                <p className="text-center text-muted py-4 small">Inventory levels are healthy.</p>
-                            ) : (
-                                <div className="list-group list-group-flush border-top">
-                                    {lowStockProducts.slice(0, 5).map(product => (
-                                        <div key={product._id || product.id} className="list-group-item px-0 d-flex align-items-center justify-content-between py-3">
-                                            <span className="text-dark small fw-medium pe-2 text-truncate" style={{ maxWidth: '200px' }}>{product.name}</span>
-                                            <span className="badge bg-danger rounded-pill px-2 py-1" style={{ fontSize: '0.65rem' }}>
-                                                {product.stock} left
+                            {statsData?.lowStockProducts?.length > 0 ? (
+                                <ul className="list-group list-group-flush">
+                                    {statsData.lowStockProducts.map(product => (
+                                        <li key={product._id} className="list-group-item d-flex justify-content-between align-items-center px-0">
+                                            <span className="text-truncate me-2">{product.name}</span>
+                                            <span className={`badge ${product.stock === 0 ? 'bg-danger' : 'bg-warning text-dark'}`}>
+                                                {product.stock === 0 ? 'Out of Stock' : `${product.stock} left`}
                                             </span>
-                                        </div>
+                                        </li>
                                     ))}
-                                </div>
+                                </ul>
+                            ) : (
+                                <p className="text-center text-muted py-4">All products are well-stocked.</p>
                             )}
                         </div>
                     </div>
